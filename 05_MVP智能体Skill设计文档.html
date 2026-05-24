@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MVP 智能体 Skill 组合设计文档 - 备案文件智能生成</title>
+  <style>
+    :root { --ink:#1f2937; --muted:#667085; --line:#d9e2ec; --brand:#2563eb; --soft:#eef5ff; --bg:#f7f9fc; --ok:#0f766e; --warn:#b45309; --bad:#b42318; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif; line-height:1.7; }
+    .wrap { max-width:1120px; margin:0 auto; padding:40px 28px 64px; }
+    header, section { background:#fff; border:1px solid var(--line); border-radius:8px; padding:28px; margin-bottom:18px; }
+    h1,h2,h3 { line-height:1.3; margin:0 0 14px; }
+    h1 { font-size:30px; } h2 { font-size:22px; } h3 { font-size:17px; margin-top:20px; }
+    p { margin:8px 0; } .meta,.note { color:var(--muted); } a { color:var(--brand); text-decoration:none; font-weight:700; }
+    table { width:100%; border-collapse:collapse; margin:12px 0 4px; }
+    th,td { border:1px solid var(--line); padding:10px 12px; vertical-align:top; }
+    th { background:#eef2f7; text-align:left; }
+    code, pre { background:#f1f5f9; border-radius:4px; }
+    code { padding:1px 5px; } pre { padding:14px; overflow:auto; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:var(--soft); color:var(--brand); font-size:12px; font-weight:700; }
+    .ok { color:var(--ok); font-weight:700; } .warn { color:var(--warn); font-weight:700; } .bad { color:var(--bad); font-weight:700; }
+    @media (max-width:760px){ .wrap{padding:22px 14px 40px;} header,section{padding:20px;} table{display:block;overflow-x:auto;} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <p><a href="./MVP文档包_首页.html">返回文档包首页</a></p>
+      <h1>备案文件智能生成 MVP 智能体 Skill 组合设计文档</h1>
+      <p class="meta">版本：V1.1 | 日期：2026-05-18 | 文档目标：把已找到的 Skill 组合成可开发、可演示的 MVP 智能体链路</p>
+      <p>本次调整后，首版 MVP 的智能体能力不再只定义为“目录匹配与初稿组装”，而是拆成一条清晰的 Skill 编排链：版面解析、基础信息抓取、目录匹配、模板注入、开评标表格生成。这样能同时覆盖图片中要求的《备案基础信息抓取表》，也能解释后续为什么可以扩展开评标表格和备案文件生成。</p>
+    </header>
+
+    <section>
+      <h2>1. Skill 组合总览</h2>
+      <table>
+        <thead>
+          <tr><th>序号</th><th>Skill 名称</th><th>技术选型</th><th>MVP 中的职责</th><th>首版状态</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>S1</td>
+            <td>多源文档版面分析与段落路由 Skill</td>
+            <td>可调用 TextIn 文档解析、阿里 OCR-Form、Azure Form Recognizer 等成熟产品</td>
+            <td>解析 PDF、Word、扫描件、网页截图，切分标题、正文、表格、页眉页脚，并给段落打语义标签。</td>
+            <td><span class="ok">首版核心</span></td>
+          </tr>
+          <tr>
+            <td>S2</td>
+            <td>备案基础信息抓取 Skill</td>
+            <td>基于大模型结构化抽取 + 规则校验</td>
+            <td>生成《备案基础信息抓取表》，覆盖文件核心信息、公告关键要素、报名信息明细、特殊备注指令。</td>
+            <td><span class="ok">首版新增核心</span></td>
+          </tr>
+          <tr>
+            <td>S3</td>
+            <td>备案材料目录匹配与初稿组装 Skill</td>
+            <td>大模型语义匹配 + 目录规则库 + 人工复核</td>
+            <td>把材料匹配到标准备案目录，生成缺失、待补充、待替换、异常提示，并组装备案初稿结构。</td>
+            <td><span class="ok">首版核心</span></td>
+          </tr>
+          <tr>
+            <td>S4</td>
+            <td>基于 Office/PDF DOM 的无损模板注入 Skill</td>
+            <td>半自研，基于 python-docx、openpyxl、Spire.Doc 等成熟底座封装 Tool</td>
+            <td>把结构化 JSON 注入标准 .docx/.xlsx 模板占位符，不改变字体、字号、页边距、表格样式等公文排版。</td>
+            <td><span class="ok">首版输出能力</span></td>
+          </tr>
+          <tr>
+            <td>S5</td>
+            <td>开评标表格生成 Skill</td>
+            <td>复用 S2 的字段结果和 S4 的模板注入能力</td>
+            <td>基于抓取字段和报名信息，生成资格审查表、符合性审查表、得分汇总表等开评标配套表格。</td>
+            <td><span class="warn">首版演示 / 后续增强</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">说明：S5 与原需求中的“开评标表格模板化生成”相关，复杂模板可放入下一版；但 Demo 中可以展示“可生成”的入口和样例结果，用于说明产品扩展方向。</p>
+    </section>
+
+    <section>
+      <h2>2. Skill 编排流程</h2>
+      <table>
+        <thead>
+          <tr><th>流程步骤</th><th>调用 Skill</th><th>输入</th><th>输出</th><th>人工复核点</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1. 上传并解析材料</td>
+            <td>S1 版面分析</td>
+            <td>PDF、Word、扫描件、网页截图、Excel</td>
+            <td>段落、表格、标题、页码、语义标签、原文定位</td>
+            <td>识别失败或版面错乱时可重新上传或人工录入。</td>
+          </tr>
+          <tr>
+            <td>2. 生成基础信息抓取表</td>
+            <td>S2 基础信息抓取</td>
+            <td>S1 输出的结构化文本、表格、项目备注</td>
+            <td>《备案基础信息抓取表》、来源、状态、校验结果</td>
+            <td>缺失、异常、低置信度字段必须人工确认。</td>
+          </tr>
+          <tr>
+            <td>3. 目录匹配与一键归档</td>
+            <td>S3 目录匹配</td>
+            <td>确认后的抓取表、材料清单、备案目录模板</td>
+            <td>目录匹配关系、缺失项、待替换项、异常项</td>
+            <td>人工确认目录匹配，处理特殊备注指令。</td>
+          </tr>
+          <tr>
+            <td>4. 备案初稿生成</td>
+            <td>S3 + S4</td>
+            <td>目录匹配结果、材料引用、备案模板</td>
+            <td>可编辑备案初稿、审查意见表</td>
+            <td>合规经理复核后通过或退回。</td>
+          </tr>
+          <tr>
+            <td>5. 开评标表格生成</td>
+            <td>S5 + S4</td>
+            <td>报名信息明细、项目基础字段、标准表格模板</td>
+            <td>可编辑 Word/Excel 表格</td>
+            <td>首版作为演示入口，正式使用前需确认模板和规则。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 备案基础信息抓取表设计</h2>
+      <table>
+        <thead>
+          <tr><th>抓取项</th><th>具体要求</th><th>输出与校验</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>文件核心信息</td>
+            <td>项目名称、项目编号、采购方式、预算金额、包件划分、采购内容、采购人、代理机构、公告发布时间</td>
+            <td>逐项标注来源材料、页码或段落、抓取状态、置信度；项目编号、金额、采购方式做格式校验。</td>
+          </tr>
+          <tr>
+            <td>公告关键要素</td>
+            <td>公告类型、报名起止时间、响应文件递交时间、开标时间、质疑投诉渠道、联系方式</td>
+            <td>对时间节点做顺序校验；联系方式缺失或格式异常时高亮。</td>
+          </tr>
+          <tr>
+            <td>报名信息明细</td>
+            <td>供应商名称、统一社会信用代码、报名时间、报名状态、联系方式</td>
+            <td>按供应商生成明细行；统一社会信用代码缺失、报名状态不明确时标记异常。</td>
+          </tr>
+          <tr>
+            <td>特殊备注指令</td>
+            <td>项目级临时 / 永久性备案特殊要求，如特定材料需额外归档、指定格式要求</td>
+            <td>进入目录匹配和初稿生成时作为约束条件；材料不足时标记待企业或人工确认。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">输出结果：生成《备案基础信息抓取表》，逐条标注信息来源、抓取状态（成功 / 缺失 / 异常）、数据校验结果、异常信息高亮提醒，并支持人工修正后确认。</p>
+    </section>
+
+    <section>
+      <h2>4. 结构化输出格式</h2>
+      <pre>{
+  "basic_info_sheet": {
+    "project_id": "proj_001",
+    "items": [
+      {
+        "category": "file_core",
+        "item_key": "project_name",
+        "item_name": "项目名称",
+        "ai_value": "2025年中药饮片采购项目",
+        "confirmed_value": "",
+        "extract_status": "success",
+        "confidence": 0.96,
+        "source": {
+          "material_id": "mat_001",
+          "file_name": "招标文件.docx",
+          "page": 1,
+          "excerpt": "采购项目名称：2025年中药饮片采购项目"
+        },
+        "validation_result": {
+          "status": "passed",
+          "message": "格式正常"
+        },
+        "review_required": false
+      },
+      {
+        "category": "notice_key",
+        "item_key": "bid_open_time",
+        "item_name": "开标时间",
+        "ai_value": "",
+        "extract_status": "missing",
+        "confidence": 0.32,
+        "source": null,
+        "validation_result": {
+          "status": "warning",
+          "message": "未在公告材料中找到开标时间"
+        },
+        "review_required": true
+      }
+    ]
+  },
+  "directory_matches": [],
+  "draft_outline": [],
+  "template_outputs": []
+}</pre>
+    </section>
+
+    <section>
+      <h2>5. 各 Skill 输入输出</h2>
+      <table>
+        <thead>
+          <tr><th>Skill</th><th>输入</th><th>输出</th><th>失败处理</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>S1 版面分析</td>
+            <td>文件对象、文件类型、文件名</td>
+            <td>版面块、表格块、段落文本、语义标签</td>
+            <td>返回解析失败原因，允许人工上传更清晰材料或转人工录入。</td>
+          </tr>
+          <tr>
+            <td>S2 基础信息抓取</td>
+            <td>版面块、表格块、项目已知字段</td>
+            <td>基础信息抓取表 JSON</td>
+            <td>字段缺失或冲突时标记 missing / exception，不编造结果。</td>
+          </tr>
+          <tr>
+            <td>S3 目录匹配</td>
+            <td>确认后的抓取表、材料类型、备案目录模板</td>
+            <td>目录匹配结果、异常列表、初稿大纲</td>
+            <td>低置信度匹配进入人工确认，不直接写为最终匹配。</td>
+          </tr>
+          <tr>
+            <td>S4 模板注入</td>
+            <td>结构化 JSON、模板文件、占位符映射</td>
+            <td>保持原格式的 Word/Excel/PDF 输出</td>
+            <td>占位符缺失时返回错误，不强行改模板排版。</td>
+          </tr>
+          <tr>
+            <td>S5 开评标表格生成</td>
+            <td>报名信息明细、项目字段、表格模板</td>
+            <td>资格审查表、符合性审查表、得分汇总表等</td>
+            <td>模板或字段不足时生成待补充清单。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>6. 人工复核边界</h2>
+      <table>
+        <thead>
+          <tr><th>事项</th><th>AI / Skill 可做</th><th>人工必须做</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>基础信息抓取</td><td>提取字段、标注来源、提示缺失和异常。</td><td>确认最终值，修正企业规则未覆盖的信息。</td></tr>
+          <tr><td>报名明细</td><td>抽取供应商名称、社会信用代码、报名时间和状态。</td><td>确认报名有效性和后续是否进入评审。</td></tr>
+          <tr><td>特殊备注指令</td><td>识别疑似特殊要求并进入提示。</td><td>判断是否确认为项目约束，是否需要额外归档。</td></tr>
+          <tr><td>目录匹配</td><td>给出匹配建议和置信度。</td><td>确认低置信度项、缺失项、待替换项。</td></tr>
+          <tr><td>模板生成</td><td>把确认后的结构化数据注入模板。</td><td>确认输出文件是否符合公司公文规范和正式提交要求。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>7. MVP 验收标准</h2>
+      <table>
+        <thead>
+          <tr><th>验收项</th><th>通过标准</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Skill 链路完整</td><td>能从上传材料走到基础信息抓取表、目录匹配和备案初稿。</td></tr>
+          <tr><td>抓取表符合图片要求</td><td>四类抓取项齐全，并展示来源、状态、校验结果、异常高亮和人工确认入口。</td></tr>
+          <tr><td>结果可解释</td><td>字段、匹配、初稿均能追溯到来源材料和处理依据。</td></tr>
+          <tr><td>模板不破坏格式</td><td>通过 S4 输出的 Word/Excel 保留模板原有排版。</td></tr>
+          <tr><td>边界清楚</td><td>AI 不直接给出最终合规结论，必须经过人工复核。</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

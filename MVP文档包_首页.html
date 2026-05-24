@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>备案文件智能生成 MVP 文档包</title>
+  <style>
+    :root {
+      --ink: #1f2937;
+      --muted: #667085;
+      --line: #d9e2ec;
+      --brand: #2563eb;
+      --soft: #eef5ff;
+      --ok: #0f766e;
+      --warn: #b45309;
+      --bg: #f7f9fc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      line-height: 1.7;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 28px 64px; }
+    header {
+      padding: 32px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    h1, h2, h3 { line-height: 1.3; margin: 0 0 14px; }
+    h1 { font-size: 30px; }
+    h2 { margin-top: 30px; font-size: 22px; }
+    h3 { margin-top: 20px; font-size: 17px; }
+    p { margin: 8px 0; }
+    .meta, .note { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .card a { color: var(--brand); font-weight: 700; text-decoration: none; }
+    .tag {
+      display: inline-block;
+      margin-right: 8px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    table { width: 100%; border-collapse: collapse; background: #fff; margin-top: 12px; }
+    th, td { border: 1px solid var(--line); padding: 10px 12px; vertical-align: top; }
+    th { background: #eef2f7; text-align: left; }
+    .ok { color: var(--ok); font-weight: 700; }
+    .warn { color: var(--warn); font-weight: 700; }
+    @media (max-width: 760px) {
+      .wrap { padding: 22px 14px 40px; }
+      header { padding: 22px; }
+      .grid { grid-template-columns: 1fr; }
+      table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>备案文件智能生成 MVP 文档包</h1>
+      <p class="meta">版本：V1.0 | 日期：2026-05-18 | 适用阶段：首版 MVP 方案评审与后续开发输入</p>
+      <p>本套文档基于《（5.16版）四组-备案文件智能生成-需求说明书》和《智能体 MVP 方案设计工作周报_最终修订版》整理。文档将原始需求说明书中的大范围功能收敛为首版可开发闭环：扫描录入、基础识别、关键词提取、生成《备案基础信息抓取表》、目录匹配、一键归档、备案文件初稿生成、人工复核确认。</p>
+    </header>
+
+    <section>
+      <h2>文档清单</h2>
+      <div class="grid">
+        <article class="card">
+          <span class="tag">PRD</span>
+          <h3><a href="./01_MVP产品需求文档_PRD.html">MVP 产品需求文档</a></h3>
+          <p>说明目标用户、核心场景、需求范围、功能清单、验收标准与不做内容。</p>
+        </article>
+        <article class="card">
+          <span class="tag">FE</span>
+          <h3><a href="./02_MVP前端设计文档.html">MVP 前端设计文档</a></h3>
+          <p>说明页面结构、用户操作路径、组件状态、关键交互和前端数据契约。</p>
+        </article>
+        <article class="card">
+          <span class="tag">BE</span>
+          <h3><a href="./03_MVP后端设计文档.html">MVP 后端设计文档</a></h3>
+          <p>说明后端模块、接口、异步任务、文件处理、权限和审计设计。</p>
+        </article>
+        <article class="card">
+          <span class="tag">DB</span>
+          <h3><a href="./04_MVP数据库设计文档.html">MVP 数据库设计文档</a></h3>
+          <p>说明核心数据对象、表结构、字段、索引、状态枚举和数据流向。</p>
+        </article>
+        <article class="card">
+          <span class="tag">AI</span>
+          <h3><a href="./05_MVP智能体Skill设计文档.html">MVP 智能体 Skill 设计文档</a></h3>
+          <p>说明智能体输入、处理步骤、结构化输出、置信度、异常处理和人工复核边界。</p>
+        </article>
+        <article class="card">
+          <span class="tag">DEMO</span>
+          <h3><a href="./06_MVP最终交付Demo.html">MVP 最终交付 Demo 网页</a></h3>
+          <p>以静态网页形式展示最终交付界面：材料上传、基础信息抓取表、Skill 编排、目录匹配、备案初稿。</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>首版 MVP 范围</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>范围类型</th>
+            <th>内容</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ok">纳入首版</td>
+            <td>R1 电子材料上传识别与基础信息结构化录入</td>
+            <td>支撑扫描录入，让材料进入系统并形成后续可处理的信息。</td>
+          </tr>
+          <tr>
+            <td class="ok">纳入首版</td>
+            <td>R3 关键词抓取与关键信息提取</td>
+            <td>提取项目名称、编号、时间、机构、供应商等字段，并生成《备案基础信息抓取表》。</td>
+          </tr>
+          <tr>
+            <td class="ok">纳入首版</td>
+            <td>R6 签字文件回扫录入与目录关联</td>
+            <td>将回扫材料与备案目录或业务节点建立对应关系，支撑一键归档。</td>
+          </tr>
+          <tr>
+            <td class="ok">纳入首版</td>
+            <td>R8 备案文件制作与初稿组装</td>
+            <td>虽然原分级为 P1，但它是闭环最终产出，因此作为首版必要补充。</td>
+          </tr>
+          <tr>
+            <td class="warn">暂不纳入</td>
+            <td>R2、R4、R5、R7 以及电子辅助评审、信用平台查询、归档统计分析</td>
+            <td>保留为后续迭代，避免首版范围过大导致无法验证核心闭环。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>评审维度覆盖</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>评分维度</th>
+            <th>对应文档</th>
+            <th>覆盖方式</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>需求与 MVP 聚焦</td>
+            <td>PRD、首页</td>
+            <td>明确 R1/R3/R6/R8 组合、业务闭环和不做内容。</td>
+          </tr>
+          <tr>
+            <td>PRD 文档质量</td>
+            <td>PRD</td>
+            <td>补充用户、场景、功能清单、验收标准、边界。</td>
+          </tr>
+          <tr>
+            <td>前端设计合理性</td>
+            <td>前端设计文档</td>
+            <td>补充页面结构、操作路径、状态与结果展示。</td>
+          </tr>
+          <tr>
+            <td>智能体能力设计</td>
+            <td>Skill 设计文档、后端设计文档</td>
+            <td>补充 AI 处理链路、结构化输出、人工复核。</td>
+          </tr>
+          <tr>
+            <td>后端与数据库设计</td>
+            <td>后端设计文档、数据库设计文档</td>
+            <td>补充接口、任务、数据表、文件记录、状态流转。</td>
+          </tr>
+          <tr>
+            <td>文档一致性与可开发性</td>
+            <td>全部文档</td>
+            <td>统一项目、材料、目录、匹配、初稿、复核等核心对象。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

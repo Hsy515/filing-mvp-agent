@@ -1,0 +1,176 @@
+{
+  "basic_info_sheet": {
+    "project_id": "proj_001",
+    "generated_at": "2025-06-15T08:32:11Z",
+    "items": [
+      {
+        "category": "file_core",
+        "item_key": "project_name",
+        "item_name": "项目名称",
+        "ai_value": "2025年中药饮片采购项目",
+        "confirmed_value": "",
+        "extract_status": "success",
+        "confidence": 0.99,
+        "source": {
+          "material_id": "mat_001",
+          "file_name": "2025年中药饮片采购项目-招标文件.pdf",
+          "block_id": "blk_0001",
+          "page": 1,
+          "excerpt": "2025年中药饮片采购项目招标文件"
+        },
+        "validation_result": { "status": "passed", "message": "格式正常" },
+        "review_required": false
+      },
+      {
+        "category": "file_core",
+        "item_key": "project_id",
+        "item_name": "项目编号",
+        "ai_value": "GCZB-2025-0117",
+        "confirmed_value": "",
+        "extract_status": "success",
+        "confidence": 0.98,
+        "source": {
+          "material_id": "mat_001",
+          "file_name": "2025年中药饮片采购项目-招标文件.pdf",
+          "block_id": "blk_0002",
+          "page": 1,
+          "excerpt": "项目编号:GCZB-2025-0117"
+        },
+        "validation_result": { "status": "passed", "message": "格式正常" },
+        "review_required": false
+      },
+      {
+        "category": "file_core",
+        "item_key": "purchase_method",
+        "item_name": "采购方式",
+        "ai_value": "公开招标",
+        "confirmed_value": "",
+        "extract_status": "success",
+        "confidence": 0.98,
+        "source": {
+          "material_id": "mat_001",
+          "file_name": "2025年中药饮片采购项目-招标文件.pdf",
+          "block_id": "blk_0003",
+          "page": 1,
+          "excerpt": "采购方式:公开招标"
+        },
+        "validation_result": { "status": "passed", "message": "枚举合法" },
+        "review_required": false
+      },
+      {
+        "category": "file_core",
+        "item_key": "budget",
+        "item_name": "预算金额",
+        "ai_value": 1250000.00,
+        "confirmed_value": "",
+        "extract_status": "success",
+        "confidence": 0.97,
+        "source": {
+          "material_id": "mat_001",
+          "file_name": "2025年中药饮片采购项目-招标文件.pdf",
+          "block_id": "blk_0004",
+          "page": 1,
+          "excerpt": "预算金额:人民币 1,250,000.00 元"
+        },
+        "validation_result": { "status": "passed", "message": "金额合法" },
+        "review_required": false
+      },
+      {
+        "category": "notice_key",
+        "item_key": "bid_open_time",
+        "item_name": "开标时间",
+        "ai_value": "2025-06-18 09:30",
+        "confirmed_value": "",
+        "extract_status": "success",
+        "confidence": 0.95,
+        "source": {
+          "material_id": "mat_001",
+          "file_name": "2025年中药饮片采购项目-招标文件.pdf",
+          "block_id": "blk_0005",
+          "page": 2,
+          "excerpt": "开标时间:2025年6月18日 09:30"
+        },
+        "validation_result": { "status": "passed", "message": "时间格式正常" },
+        "review_required": false
+      },
+      {
+        "category": "notice_key",
+        "item_key": "registration_end",
+        "item_name": "报名截止时间",
+        "ai_value": "",
+        "confirmed_value": "",
+        "extract_status": "missing",
+        "confidence": 0.0,
+        "source": null,
+        "validation_result": { "status": "warning", "message": "未在公告材料中找到报名截止时间" },
+        "review_required": true
+      },
+      {
+        "category": "supplier_registration",
+        "item_key": "supplier_1.supplier_name",
+        "item_name": "供应商1-供应商名称",
+        "ai_value": "A 中药材有限公司",
+        "confirmed_value": "",
+        "extract_status": "success",
+        "confidence": 0.92,
+        "source": {
+          "material_id": "mat_001",
+          "file_name": "2025年中药饮片采购项目-招标文件.pdf",
+          "block_id": "blk_0010",
+          "page": 5,
+          "excerpt": "A 中药材有限公司"
+        },
+        "validation_result": { "status": "skipped", "message": "" },
+        "review_required": false
+      },
+      {
+        "category": "supplier_registration",
+        "item_key": "supplier_1.social_credit_code",
+        "item_name": "供应商1-统一社会信用代码",
+        "ai_value": "91110108MA01XXXXXX",
+        "confirmed_value": "",
+        "extract_status": "success",
+        "confidence": 0.92,
+        "source": {
+          "material_id": "mat_001",
+          "file_name": "2025年中药饮片采购项目-招标文件.pdf",
+          "block_id": "blk_0010",
+          "page": 5,
+          "excerpt": "91110108MA01XXXXXX"
+        },
+        "validation_result": { "status": "passed", "message": "信用代码格式正常(未做校验码计算)" },
+        "review_required": false
+      },
+      {
+        "category": "supplier_registration",
+        "item_key": "supplier_3.social_credit_code",
+        "item_name": "供应商3-统一社会信用代码",
+        "ai_value": "",
+        "confirmed_value": "",
+        "extract_status": "missing",
+        "confidence": 0.0,
+        "source": null,
+        "validation_result": { "status": "warning", "message": "供应商3的统一社会信用代码缺失" },
+        "review_required": true
+      },
+      {
+        "category": "special_remark",
+        "item_key": "extra_archive_requirement",
+        "item_name": "额外归档要求",
+        "ai_value": "需归档每批次药材的第三方质量检测报告",
+        "confirmed_value": "",
+        "extract_status": "success",
+        "confidence": 0.78,
+        "source": {
+          "material_id": "mat_001",
+          "file_name": "2025年中药饮片采购项目-招标文件.pdf",
+          "block_id": "blk_0023",
+          "page": 12,
+          "excerpt": "供应商需提供每批次药材的第三方质量检测报告并归档备查"
+        },
+        "validation_result": { "status": "skipped", "message": "" },
+        "review_required": true
+      }
+    ]
+  }
+}

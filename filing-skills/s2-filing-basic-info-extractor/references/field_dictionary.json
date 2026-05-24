@@ -1,0 +1,198 @@
+{
+  "$comment": "备案基础信息抓取字段权威清单。新增字段时必须更新此文件,并同步 extraction_schema.json 中的枚举。",
+  "version": "1.1",
+  "fields": [
+    {
+      "category": "file_core",
+      "key": "project_name",
+      "name": "项目名称",
+      "type": "string",
+      "required": true,
+      "source_hint": "通常在招标文件首页或公告标题"
+    },
+    {
+      "category": "file_core",
+      "key": "project_id",
+      "name": "项目编号",
+      "type": "string",
+      "required": true,
+      "validator": "validate_project_id"
+    },
+    {
+      "category": "file_core",
+      "key": "purchase_method",
+      "name": "采购方式",
+      "type": "enum",
+      "enum": ["公开招标", "邀请招标", "竞争性谈判", "竞争性磋商", "单一来源", "询价", "其他"],
+      "required": true,
+      "validator": "validate_enum"
+    },
+    {
+      "category": "file_core",
+      "key": "budget",
+      "name": "预算金额",
+      "type": "decimal",
+      "unit": "元",
+      "required": true,
+      "validator": "validate_amount"
+    },
+    {
+      "category": "file_core",
+      "key": "package_division",
+      "name": "包件划分",
+      "type": "string",
+      "required": false,
+      "source_hint": "如'分两个标段'或'不分包'"
+    },
+    {
+      "category": "file_core",
+      "key": "purchase_content",
+      "name": "采购内容",
+      "type": "string",
+      "required": true
+    },
+    {
+      "category": "file_core",
+      "key": "purchaser",
+      "name": "采购人",
+      "type": "string",
+      "required": true
+    },
+    {
+      "category": "file_core",
+      "key": "agent",
+      "name": "代理机构",
+      "type": "string",
+      "required": false
+    },
+    {
+      "category": "file_core",
+      "key": "notice_publish_time",
+      "name": "公告发布时间",
+      "type": "datetime",
+      "required": true,
+      "validator": "validate_datetime"
+    },
+    {
+      "category": "notice_key",
+      "key": "notice_type",
+      "name": "公告类型",
+      "type": "enum",
+      "enum": ["招标公告", "竞争性谈判公告", "竞争性磋商公告", "询价公告", "更正公告", "中标公告"],
+      "required": true
+    },
+    {
+      "category": "notice_key",
+      "key": "registration_start",
+      "name": "报名开始时间",
+      "type": "datetime",
+      "required": false,
+      "validator": "validate_datetime"
+    },
+    {
+      "category": "notice_key",
+      "key": "registration_end",
+      "name": "报名截止时间",
+      "type": "datetime",
+      "required": true,
+      "validator": "validate_datetime"
+    },
+    {
+      "category": "notice_key",
+      "key": "bid_close_time",
+      "name": "响应文件递交截止时间",
+      "type": "datetime",
+      "required": true,
+      "validator": "validate_datetime"
+    },
+    {
+      "category": "notice_key",
+      "key": "bid_open_time",
+      "name": "开标时间",
+      "type": "datetime",
+      "required": true,
+      "validator": "validate_datetime",
+      "cross_check": "must_be_after:bid_close_time"
+    },
+    {
+      "category": "notice_key",
+      "key": "question_channel",
+      "name": "质疑投诉渠道",
+      "type": "string",
+      "required": false
+    },
+    {
+      "category": "notice_key",
+      "key": "contact_info",
+      "name": "联系方式",
+      "type": "string",
+      "required": true,
+      "validator": "validate_contact"
+    },
+    {
+      "category": "supplier_registration",
+      "key": "supplier_name",
+      "name": "供应商名称",
+      "type": "string",
+      "required": true,
+      "is_row_field": true
+    },
+    {
+      "category": "supplier_registration",
+      "key": "social_credit_code",
+      "name": "统一社会信用代码",
+      "type": "string",
+      "required": true,
+      "is_row_field": true,
+      "validator": "validate_social_credit_code"
+    },
+    {
+      "category": "supplier_registration",
+      "key": "registration_time",
+      "name": "报名时间",
+      "type": "datetime",
+      "required": true,
+      "is_row_field": true,
+      "validator": "validate_datetime"
+    },
+    {
+      "category": "supplier_registration",
+      "key": "registration_status",
+      "name": "报名状态",
+      "type": "enum",
+      "enum": ["已报名", "资格审查通过", "资格审查未通过", "已撤回", "未知"],
+      "required": true,
+      "is_row_field": true
+    },
+    {
+      "category": "supplier_registration",
+      "key": "supplier_contact",
+      "name": "供应商联系方式",
+      "type": "string",
+      "required": false,
+      "is_row_field": true
+    },
+    {
+      "category": "special_remark",
+      "key": "extra_archive_requirement",
+      "name": "额外归档要求",
+      "type": "string",
+      "required": false,
+      "source_hint": "项目级临时备案要求,如'需归档第三方检测报告'"
+    },
+    {
+      "category": "special_remark",
+      "key": "format_requirement",
+      "name": "指定格式要求",
+      "type": "string",
+      "required": false
+    },
+    {
+      "category": "special_remark",
+      "key": "temporary_rule",
+      "name": "临时性约束",
+      "type": "string",
+      "required": false
+    }
+  ]
+}

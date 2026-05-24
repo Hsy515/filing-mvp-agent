@@ -1,0 +1,75 @@
+{
+  "$comment": "开评标表格字段映射权威定义。新增表格类型须在此添加完整定义,并提供对应模板。",
+  "version": "1.0",
+  "tables": {
+    "qualification_review": {
+      "name": "资格审查表",
+      "template_format": "docx",
+      "template_hint": "templates/资格审查表.docx",
+      "header_placeholders": {
+        "{{project_name}}":    { "from": "field", "item_key": "project_name" },
+        "{{project_id}}":      { "from": "field", "item_key": "project_id" },
+        "{{purchaser}}":       { "from": "field", "item_key": "purchaser" },
+        "{{agent}}":           { "from": "field", "item_key": "agent" },
+        "{{bid_open_time}}":   { "from": "field", "item_key": "bid_open_time", "render_type": "date", "format": "YYYY年M月D日 HH:MM" },
+        "{{review_date}}":     { "from": "extra", "key": "review_date", "render_type": "date", "format": "YYYY年M月D日" }
+      },
+      "row_table": {
+        "anchor_placeholder": "{{#supplier_table}}",
+        "row_source": "supplier_list",
+        "columns": [
+          { "field": "index",              "source": "auto_index" },
+          { "field": "name",               "source": "supplier_field", "item_key": "supplier_name" },
+          { "field": "code",               "source": "supplier_field", "item_key": "social_credit_code" },
+          { "field": "register_time",      "source": "supplier_field", "item_key": "registration_time" },
+          { "field": "qualification_pass", "source": "static", "value": "待审查" },
+          { "field": "remark",             "source": "static", "value": "" }
+        ]
+      }
+    },
+    "attendance": {
+      "name": "签到表",
+      "template_format": "docx",
+      "template_hint": "templates/签到表.docx",
+      "header_placeholders": {
+        "{{project_name}}":  { "from": "field", "item_key": "project_name" },
+        "{{project_id}}":    { "from": "field", "item_key": "project_id" },
+        "{{bid_open_time}}": { "from": "field", "item_key": "bid_open_time", "render_type": "date", "format": "YYYY年M月D日 HH:MM" },
+        "{{venue}}":         { "from": "extra", "key": "venue", "render_type": "text" }
+      },
+      "row_table": {
+        "anchor_placeholder": "{{#attendance_table}}",
+        "row_source": "supplier_list",
+        "columns": [
+          { "field": "index",          "source": "auto_index" },
+          { "field": "supplier_name",  "source": "supplier_field", "item_key": "supplier_name" },
+          { "field": "rep_name",       "source": "static", "value": "" },
+          { "field": "rep_id",         "source": "static", "value": "" },
+          { "field": "contact",        "source": "supplier_field", "item_key": "supplier_contact" },
+          { "field": "signature",      "source": "static", "value": "" }
+        ]
+      }
+    },
+    "compliance_review": {
+      "$status": "placeholder",
+      "$comment": "首版占位,正式上线前补全。需要规则: 符合性审查项清单、每项判定条件",
+      "name": "符合性审查表",
+      "template_format": "docx",
+      "template_hint": "templates/符合性审查表.docx"
+    },
+    "score_summary": {
+      "$status": "placeholder",
+      "$comment": "首版占位。需要外部传入评分规则(技术分/商务分权重、专家打分)",
+      "name": "得分汇总表",
+      "template_format": "xlsx",
+      "template_hint": "templates/得分汇总表.xlsx"
+    },
+    "bid_opening_record": {
+      "$status": "placeholder",
+      "$comment": "首版占位。需要外部传入唱标价、专家签字位",
+      "name": "开标记录表",
+      "template_format": "xlsx",
+      "template_hint": "templates/开标记录表.xlsx"
+    }
+  }
+}

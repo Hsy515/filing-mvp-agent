@@ -1,0 +1,39 @@
+{
+  "$comment": "S5 调用 S4 inject_docx 时实际传入的 placeholder_mapping 样例(资格审查表)。可直接拿这份去 inject_docx 验证模板。",
+  "{{project_name}}":    { "type": "text", "value": "2025年中药饮片采购项目" },
+  "{{project_id}}":      { "type": "text", "value": "GCZB-2025-0117" },
+  "{{purchaser}}":       { "type": "text", "value": "某省中医院" },
+  "{{agent}}":           { "type": "text", "value": "国采招标代理有限公司" },
+  "{{bid_open_time}}":   { "type": "date", "value": "2025-06-18 09:30", "format": "YYYY年M月D日 HH:MM" },
+  "{{review_date}}":     { "type": "date", "value": "2025-06-18",       "format": "YYYY年M月D日" },
+  "{{#supplier_table}}": {
+    "type": "table_rows",
+    "anchor": "supplier_table",
+    "rows": [
+      {
+        "index": 1,
+        "name": "A 中药材有限公司",
+        "code": "91110108MA01XXXXXX",
+        "register_time": "2025-06-10 14:22",
+        "qualification_pass": "待审查",
+        "remark": ""
+      },
+      {
+        "index": 2,
+        "name": "B 制药股份有限公司",
+        "code": "91310115MA02XXXXXX",
+        "register_time": "2025-06-11 09:05",
+        "qualification_pass": "待审查",
+        "remark": ""
+      },
+      {
+        "index": 3,
+        "name": "C 健康产业有限公司",
+        "code": "",
+        "register_time": "2025-06-12 16:48",
+        "qualification_pass": "待审查",
+        "remark": "统一社会信用代码缺失,需人工补录"
+      }
+    ]
+  }
+}

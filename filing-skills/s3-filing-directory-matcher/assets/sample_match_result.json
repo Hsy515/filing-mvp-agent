@@ -1,0 +1,120 @@
+{
+  "directory_matches": [
+    {
+      "directory_item_id": "dir_001",
+      "directory_item_name": "项目立项申请",
+      "required": true,
+      "match_status": "missing",
+      "matched_materials": [],
+      "review_required": true,
+      "remark": "必需项缺失,需补充材料"
+    },
+    {
+      "directory_item_id": "dir_003",
+      "directory_item_name": "招标(谈判/磋商)文件",
+      "required": true,
+      "match_status": "matched",
+      "matched_materials": [
+        {
+          "material_id": "mat_001",
+          "evidence_block_ids": ["blk_0001", "blk_0003", "blk_0004"],
+          "confidence": 0.95,
+          "hit_rules": [
+            "filename:['招标文件', '谈判文件', '磋商文件']",
+            "content_tag:['project_name', 'purchase_method', 'budget']"
+          ]
+        }
+      ],
+      "review_required": false,
+      "remark": ""
+    },
+    {
+      "directory_item_id": "dir_004",
+      "directory_item_name": "公告原文",
+      "required": true,
+      "match_status": "matched",
+      "matched_materials": [
+        {
+          "material_id": "mat_002",
+          "evidence_block_ids": ["blk_a05"],
+          "confidence": 0.88,
+          "hit_rules": ["content_tag:['notice_publish_time', 'bid_open_time']"]
+        }
+      ],
+      "review_required": false,
+      "remark": ""
+    },
+    {
+      "directory_item_id": "dir_005",
+      "directory_item_name": "供应商报名表",
+      "required": true,
+      "match_status": "matched",
+      "matched_materials": [
+        {
+          "material_id": "mat_001",
+          "evidence_block_ids": ["blk_0010"],
+          "confidence": 0.80,
+          "hit_rules": ["content_tag:['supplier_list_header']"]
+        }
+      ],
+      "review_required": false,
+      "remark": ""
+    },
+    {
+      "directory_item_id": "dir_007",
+      "directory_item_name": "评标报告",
+      "required": true,
+      "match_status": "missing",
+      "matched_materials": [],
+      "review_required": true,
+      "remark": "必需项缺失,需补充材料"
+    },
+    {
+      "directory_item_id": "dir_900",
+      "directory_item_name": "特殊归档:需归档每批次药材的第三方质量检测报告",
+      "required": true,
+      "match_status": "missing",
+      "matched_materials": [],
+      "review_required": true,
+      "remark": "必需项缺失,需补充材料"
+    }
+  ],
+  "missing_items": ["dir_001", "dir_007", "dir_900"],
+  "needs_replacement_items": [],
+  "exceptions": [],
+  "constraints_applied": ["extra_archive_requirement"],
+  "draft_outline": [
+    {
+      "section_id": "sec_001",
+      "section_title": "一、项目基本信息",
+      "directory_item_ids": ["dir_001"],
+      "content_refs": [
+        { "type": "field", "item_key": "project_name", "value": "2025年中药饮片采购项目", "review_required": false, "resolution": "ok" },
+        { "type": "field", "item_key": "project_id", "value": "GCZB-2025-0117", "review_required": false, "resolution": "ok" },
+        { "type": "field", "item_key": "purchase_method", "value": "公开招标", "review_required": false, "resolution": "ok" },
+        { "type": "field", "item_key": "budget", "value": 1250000.00, "review_required": false, "resolution": "ok" }
+      ],
+      "status": "ready",
+      "missing_refs": []
+    },
+    {
+      "section_id": "sec_005",
+      "section_title": "五、报名信息",
+      "directory_item_ids": ["dir_005"],
+      "content_refs": [
+        {
+          "type": "table",
+          "source": "supplier_list",
+          "resolution": "ok",
+          "table_rows": [
+            { "_index": 1, "supplier_name": "A 中药材有限公司", "social_credit_code": "91110108MA01XXXXXX", "registration_time": "2025-06-10 14:22", "registration_status": "已报名" },
+            { "_index": 2, "supplier_name": "B 制药股份有限公司", "social_credit_code": "91310115MA02XXXXXX", "registration_time": "2025-06-11 09:05", "registration_status": "已报名" },
+            { "_index": 3, "supplier_name": "C 健康产业有限公司", "social_credit_code": "", "registration_time": "2025-06-12 16:48", "registration_status": "已报名" }
+          ]
+        }
+      ],
+      "status": "ready",
+      "missing_refs": []
+    }
+  ]
+}

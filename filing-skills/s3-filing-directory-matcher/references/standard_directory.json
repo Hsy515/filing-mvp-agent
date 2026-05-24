@@ -1,0 +1,121 @@
+{
+  "$comment": "企业标准备案材料目录。修改此文件须经合规经理审核。",
+  "template_id": "std_filing_v3",
+  "version": "3.0",
+  "description": "MVP 阶段通用备案目录,覆盖公开招标 / 竞争性谈判 / 竞争性磋商三种主流采购方式",
+  "items": [
+    {
+      "directory_item_id": "dir_001",
+      "directory_item_name": "项目立项申请",
+      "required": true,
+      "section_hint": "项目基本信息",
+      "applicable_purchase_methods": [],
+      "match_rules": [
+        { "type": "filename_keyword", "keywords": ["立项", "申请书", "项目申请"] },
+        { "type": "material_type", "values": ["project_application"] }
+      ]
+    },
+    {
+      "directory_item_id": "dir_002",
+      "directory_item_name": "采购需求文件",
+      "required": true,
+      "section_hint": "采购需求",
+      "applicable_purchase_methods": [],
+      "match_rules": [
+        { "type": "filename_keyword", "keywords": ["采购需求", "需求文件", "技术规格"] },
+        { "type": "material_type", "values": ["procurement_requirements"] }
+      ]
+    },
+    {
+      "directory_item_id": "dir_003",
+      "directory_item_name": "招标(谈判/磋商)文件",
+      "required": true,
+      "section_hint": "招标文件",
+      "applicable_purchase_methods": [],
+      "match_rules": [
+        { "type": "filename_keyword", "keywords": ["招标文件", "谈判文件", "磋商文件"] },
+        { "type": "material_type", "values": ["tender_document"] },
+        { "type": "content_tag", "tags": ["project_name", "purchase_method", "budget"], "min_hits": 2 }
+      ]
+    },
+    {
+      "directory_item_id": "dir_004",
+      "directory_item_name": "公告原文",
+      "required": true,
+      "section_hint": "公告信息",
+      "applicable_purchase_methods": [],
+      "match_rules": [
+        { "type": "filename_keyword", "keywords": ["公告", "招标公告", "采购公告"] },
+        { "type": "material_type", "values": ["public_notice"] },
+        { "type": "content_tag", "tags": ["notice_publish_time", "bid_open_time"], "min_hits": 1 }
+      ]
+    },
+    {
+      "directory_item_id": "dir_005",
+      "directory_item_name": "供应商报名表",
+      "required": true,
+      "section_hint": "报名信息",
+      "applicable_purchase_methods": [],
+      "match_rules": [
+        { "type": "filename_keyword", "keywords": ["报名", "报名表", "投标人名单"] },
+        { "type": "content_tag", "tags": ["supplier_list_header"], "min_hits": 1 },
+        { "type": "field_present", "item_keys": ["supplier_1.supplier_name"] }
+      ]
+    },
+    {
+      "directory_item_id": "dir_006",
+      "directory_item_name": "资格审查表",
+      "required": true,
+      "section_hint": "评审记录",
+      "applicable_purchase_methods": [],
+      "match_rules": [
+        { "type": "filename_keyword", "keywords": ["资格审查", "资格预审"] },
+        { "type": "material_type", "values": ["qualification_review"] }
+      ]
+    },
+    {
+      "directory_item_id": "dir_007",
+      "directory_item_name": "评标报告",
+      "required": true,
+      "section_hint": "评审记录",
+      "applicable_purchase_methods": ["公开招标", "邀请招标"],
+      "match_rules": [
+        { "type": "filename_keyword", "keywords": ["评标报告", "评审报告"] },
+        { "type": "material_type", "values": ["evaluation_report"] }
+      ]
+    },
+    {
+      "directory_item_id": "dir_008",
+      "directory_item_name": "中标(成交)通知书",
+      "required": true,
+      "section_hint": "结果文件",
+      "applicable_purchase_methods": [],
+      "match_rules": [
+        { "type": "filename_keyword", "keywords": ["中标通知", "成交通知"] },
+        { "type": "material_type", "values": ["award_notice"] }
+      ]
+    },
+    {
+      "directory_item_id": "dir_009",
+      "directory_item_name": "合同文本",
+      "required": false,
+      "section_hint": "结果文件",
+      "applicable_purchase_methods": [],
+      "match_rules": [
+        { "type": "filename_keyword", "keywords": ["合同", "协议"] },
+        { "type": "material_type", "values": ["contract"] }
+      ]
+    },
+    {
+      "directory_item_id": "dir_010",
+      "directory_item_name": "履约验收材料",
+      "required": false,
+      "section_hint": "履约阶段",
+      "applicable_purchase_methods": [],
+      "match_rules": [
+        { "type": "filename_keyword", "keywords": ["验收", "履约"] },
+        { "type": "material_type", "values": ["acceptance_report"] }
+      ]
+    }
+  ]
+}

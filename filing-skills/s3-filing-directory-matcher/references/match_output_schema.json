@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://filing-mvp/schemas/s3-match.json",
+  "title": "S3 Directory Match Output",
+  "type": "object",
+  "required": ["directory_matches"],
+  "properties": {
+    "directory_matches": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/DirectoryMatch" }
+    },
+    "missing_items": { "type": "array", "items": { "type": "string" } },
+    "needs_replacement_items": { "type": "array", "items": { "type": "string" } },
+    "exceptions": { "type": "array", "items": { "type": "string" } },
+    "constraints_applied": { "type": "array", "items": { "type": "string" } },
+    "draft_outline": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/OutlineSection" }
+    }
+  },
+  "definitions": {
+    "DirectoryMatch": {
+      "type": "object",
+      "required": ["directory_item_id", "directory_item_name", "match_status"],
+      "properties": {
+        "directory_item_id": { "type": "string" },
+        "directory_item_name": { "type": "string" },
+        "required": { "type": "boolean" },
+        "match_status": {
+          "type": "string",
+          "enum": ["matched", "missing", "needs_replacement", "exception"]
+        },
+        "matched_materials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["material_id"],
+            "properties": {
+              "material_id": { "type": "string" },
+              "evidence_block_ids": { "type": "array", "items": { "type": "string" } },
+              "confidence": { "type": "number" },
+              "hit_rules": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "review_required": { "type": "boolean" },
+        "remark": { "type": "string" }
+      }
+    },
+    "OutlineSection": {
+      "type": "object",
+      "required": ["section_id", "section_title"],
+      "properties": {
+        "section_id": { "type": "string" },
+        "section_title": { "type": "string" },
+        "directory_item_ids": { "type": "array", "items": { "type": "string" } },
+        "content_refs": { "type": "array" },
+        "status": { "type": "string", "enum": ["ready", "partial", "blocked"] },
+        "missing_refs": { "type": "array" }
+      }
+    }
+  }
+}

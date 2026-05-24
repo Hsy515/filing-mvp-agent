@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MVP 后端设计文档 - 备案文件智能生成</title>
+  <style>
+    :root { --ink:#1f2937; --muted:#667085; --line:#d9e2ec; --brand:#2563eb; --soft:#eef5ff; --bg:#f7f9fc; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif; line-height:1.7; }
+    .wrap { max-width:1120px; margin:0 auto; padding:40px 28px 64px; }
+    header, section { background:#fff; border:1px solid var(--line); border-radius:8px; padding:28px; margin-bottom:18px; }
+    h1,h2,h3 { line-height:1.3; margin:0 0 14px; }
+    h1 { font-size:30px; } h2 { font-size:22px; } h3 { font-size:17px; margin-top:20px; }
+    p { margin:8px 0; } .meta,.note { color:var(--muted); } a { color:var(--brand); text-decoration:none; font-weight:700; }
+    table { width:100%; border-collapse:collapse; margin:12px 0 4px; }
+    th,td { border:1px solid var(--line); padding:10px 12px; vertical-align:top; }
+    th { background:#eef2f7; text-align:left; }
+    code, pre { background:#f1f5f9; border-radius:4px; }
+    code { padding:1px 5px; } pre { padding:14px; overflow:auto; }
+    @media (max-width:760px){ .wrap{padding:22px 14px 40px;} header,section{padding:20px;} table{display:block;overflow-x:auto;} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <p><a href="./MVP文档包_首页.html">返回文档包首页</a></p>
+      <h1>备案文件智能生成 MVP 后端设计文档</h1>
+      <p class="meta">版本：V1.0 | 日期：2026-05-18 | 架构目标：支撑首版闭环可开发、可追踪、可扩展</p>
+      <p>后端设计围绕项目、材料、识别结果、备案基础信息抓取表、目录匹配、备案初稿、人工复核七类核心对象展开。AI 处理采用异步任务，前端通过任务状态查看进度，避免大文件识别或初稿生成阻塞用户操作。</p>
+    </header>
+
+    <section>
+      <h2>1. 总体架构</h2>
+      <pre>PC Web 前端
+  |
+API 服务层：认证、项目、材料、字段、目录、初稿、复核、日志
+  |
+业务服务层：文件解析、OCR、字段提取、目录匹配、初稿组装、审查意见生成
+  |
+异步任务层：parse_material、extract_fields、match_directory、generate_draft
+  |
+数据层：关系数据库、文件存储、任务日志、AI 输出记录</pre>
+      <p>首版可先采用单体后端加异步任务队列的结构，模块边界清楚即可。后续若接入更多外部平台或高并发任务，再拆分 OCR、AI 和文件服务。</p>
+    </section>
+
+    <section>
+      <h2>2. 后端模块</h2>
+      <table>
+        <thead>
+          <tr><th>模块</th><th>职责</th><th>对应需求</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>认证与权限模块</td><td>用户登录、角色权限、项目访问控制。</td><td>非功能需求：权限管理</td></tr>
+          <tr><td>项目模块</td><td>项目创建、基础字段维护、项目状态流转。</td><td>R1、R8</td></tr>
+          <tr><td>材料模块</td><td>文件上传、文件存储、材料状态、文件预览。</td><td>R1、R6</td></tr>
+          <tr><td>解析与提取模块</td><td>文本解析、OCR、关键词和字段提取、置信度记录。</td><td>R1、R3</td></tr>
+          <tr><td>基础信息抓取表模块</td><td>按文件核心信息、公告关键要素、报名信息明细、特殊备注指令生成确认表。</td><td>R1、R3</td></tr>
+          <tr><td>目录模板模块</td><td>维护标准备案目录、必填项、排序规则。</td><td>R6、R8</td></tr>
+          <tr><td>目录匹配模块</td><td>基于材料名、文本和字段建议目录匹配，支持人工调整。</td><td>R6</td></tr>
+          <tr><td>初稿生成模块</td><td>按目录顺序组装材料，生成备案初稿和审查意见表。</td><td>R8</td></tr>
+          <tr><td>复核模块</td><td>提交复核、通过、退回、意见记录。</td><td>人工复核边界</td></tr>
+          <tr><td>审计日志模块</td><td>记录上传、识别、修改、匹配、生成、复核等操作。</td><td>非功能需求：可审计性</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 核心接口设计</h2>
+      <table>
+        <thead>
+          <tr><th>接口</th><th>方法</th><th>用途</th><th>关键入参</th><th>关键返回</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/api/projects</code></td><td>POST</td><td>创建项目</td><td>项目名称、编号、采购方式</td><td>项目 ID、状态</td></tr>
+          <tr><td><code>/api/projects</code></td><td>GET</td><td>查询项目列表</td><td>关键词、状态、分页</td><td>项目列表、统计数</td></tr>
+          <tr><td><code>/api/projects/{id}</code></td><td>PATCH</td><td>编辑项目基础信息</td><td>字段 key/value</td><td>更新后的项目</td></tr>
+          <tr><td><code>/api/projects/{id}/materials</code></td><td>POST</td><td>上传材料</td><td>文件、材料备注</td><td>材料 ID、上传状态</td></tr>
+          <tr><td><code>/api/materials/{id}/parse</code></td><td>POST</td><td>发起解析任务</td><td>材料 ID</td><td>任务 ID</td></tr>
+          <tr><td><code>/api/projects/{id}/extractions</code></td><td>GET</td><td>查看提取字段</td><td>项目 ID</td><td>字段列表、来源、置信度</td></tr>
+          <tr><td><code>/api/extractions/{id}</code></td><td>PATCH</td><td>人工修正字段</td><td>修正值、备注</td><td>字段状态</td></tr>
+          <tr><td><code>/api/projects/{id}/basic-info-sheet</code></td><td>POST</td><td>生成备案基础信息抓取表</td><td>项目 ID、材料范围</td><td>任务 ID、抓取表 ID</td></tr>
+          <tr><td><code>/api/projects/{id}/basic-info-sheet</code></td><td>GET</td><td>查看备案基础信息抓取表</td><td>项目 ID</td><td>抓取项、AI 结果、来源、状态、校验结果</td></tr>
+          <tr><td><code>/api/basic-info-items/{id}</code></td><td>PATCH</td><td>人工修正抓取项</td><td>确认值、状态、处理说明</td><td>更新后的抓取项</td></tr>
+          <tr><td><code>/api/projects/{id}/directory/match</code></td><td>POST</td><td>发起目录匹配</td><td>项目 ID、目录模板 ID</td><td>任务 ID</td></tr>
+          <tr><td><code>/api/projects/{id}/directory</code></td><td>GET</td><td>查看目录匹配结果</td><td>项目 ID</td><td>目录项、材料、状态</td></tr>
+          <tr><td><code>/api/directory-matches/{id}</code></td><td>PATCH</td><td>人工调整匹配</td><td>材料 ID、状态、备注</td><td>匹配结果</td></tr>
+          <tr><td><code>/api/projects/{id}/drafts</code></td><td>POST</td><td>生成备案初稿</td><td>项目 ID、生成选项</td><td>初稿 ID、任务 ID</td></tr>
+          <tr><td><code>/api/drafts/{id}</code></td><td>GET</td><td>查看初稿</td><td>初稿 ID</td><td>章节、材料、审查意见</td></tr>
+          <tr><td><code>/api/drafts/{id}/submit-review</code></td><td>POST</td><td>提交复核</td><td>提交说明、复核人</td><td>复核记录 ID</td></tr>
+          <tr><td><code>/api/reviews/{id}</code></td><td>PATCH</td><td>复核通过或退回</td><td>动作、意见</td><td>复核状态</td></tr>
+          <tr><td><code>/api/tasks/{id}</code></td><td>GET</td><td>查询异步任务</td><td>任务 ID</td><td>任务状态、进度、错误信息</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. 异步任务设计</h2>
+      <table>
+        <thead>
+          <tr><th>任务类型</th><th>触发点</th><th>处理步骤</th><th>失败处理</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>parse_material</code></td>
+            <td>材料上传后或用户点击重新识别</td>
+            <td>读取文件、解析文本、必要时 OCR、保存原始文本。</td>
+            <td>记录失败原因，材料状态为 failed，允许重试或人工录入。</td>
+          </tr>
+          <tr>
+            <td><code>extract_fields</code></td>
+            <td>材料解析完成后</td>
+            <td>调用智能体提取项目字段、关键词、材料类型、来源位置。</td>
+            <td>保留原文，字段标记为待人工处理。</td>
+          </tr>
+          <tr>
+            <td><code>generate_basic_info_sheet</code></td>
+            <td>字段提取完成后或用户点击重新生成抓取表</td>
+            <td>按四类抓取项汇总文件核心信息、公告关键要素、报名信息明细和特殊备注指令。</td>
+            <td>无法确认的项目标记为缺失或异常，等待人工修正。</td>
+          </tr>
+          <tr>
+            <td><code>match_directory</code></td>
+            <td>字段确认后或用户点击重新匹配</td>
+            <td>读取目录模板和材料字段，生成目录匹配建议。</td>
+            <td>目录项标记为待补充或异常，并提示人工处理。</td>
+          </tr>
+          <tr>
+            <td><code>generate_draft</code></td>
+            <td>目录匹配确认后</td>
+            <td>按目录排序组装材料，生成审查意见表和初稿结构。</td>
+            <td>生成失败时保留匹配结果，允许用户重新生成。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>5. 状态流转</h2>
+      <h3>5.1 项目状态</h3>
+      <pre>draft -> processing -> reviewing -> approved
+                 |          |
+                 |          -> returned -> processing
+                 -> returned</pre>
+      <h3>5.2 材料状态</h3>
+      <pre>uploaded -> parsing -> parsed -> extracting -> extracted -> matched
+                  |                         |
+                  -> failed                 -> failed</pre>
+      <h3>5.3 目录项状态</h3>
+      <pre>unmatched -> matched
+          -> missing
+          -> needs_replace
+          -> exception
+          -> ignored</pre>
+    </section>
+
+    <section>
+      <h2>6. AI 服务边界</h2>
+      <table>
+        <thead>
+          <tr><th>环节</th><th>AI 负责</th><th>系统负责</th><th>人工负责</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>字段提取</td>
+            <td>从文本中提取字段、来源和置信度。</td>
+            <td>保存字段、展示来源、管理版本。</td>
+            <td>确认或修正低置信度字段。</td>
+          </tr>
+          <tr>
+            <td>目录匹配</td>
+            <td>建议材料对应目录项，并说明依据。</td>
+            <td>写入匹配关系，管理状态和排序。</td>
+            <td>调整错误匹配，标记缺失或异常。</td>
+          </tr>
+          <tr>
+            <td>初稿组装</td>
+            <td>生成目录化初稿结构和审查意见。</td>
+            <td>保存初稿版本，关联材料和意见。</td>
+            <td>最终复核、退回或通过。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">AI 输出不能直接作为最终备案结论，必须经过人工复核后才能进入正式流转。</p>
+    </section>
+
+    <section>
+      <h2>7. 安全、权限与审计</h2>
+      <table>
+        <thead>
+          <tr><th>项目</th><th>MVP 设计</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>角色权限</td><td>备案专员可编辑项目和材料；合规经理可复核；管理员可维护用户和目录模板。</td></tr>
+          <tr><td>文件访问</td><td>文件下载和预览需校验项目权限，不允许跨项目访问。</td></tr>
+          <tr><td>数据修改</td><td>字段修正、匹配调整、初稿提交和复核动作都记录审计日志。</td></tr>
+          <tr><td>AI 输出留存</td><td>保存 AI 原始输出、处理版本和人工修正值，方便追踪。</td></tr>
+          <tr><td>异常处理</td><td>所有任务失败需有错误码、错误信息和可重试动作。</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

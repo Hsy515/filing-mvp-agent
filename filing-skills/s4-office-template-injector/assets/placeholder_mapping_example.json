@@ -1,0 +1,22 @@
+{
+  "$comment": "S4 注入 mapping 示例: 演示文本/数值/日期/表格行四种类型",
+  "{{project_name}}":      { "type": "text",   "value": "2025年中药饮片采购项目" },
+  "{{project_id}}":        { "type": "text",   "value": "GCZB-2025-0117" },
+  "{{purchase_method}}":   { "type": "text",   "value": "公开招标" },
+  "{{budget}}":            { "type": "number", "value": 1250000.00 },
+  "{{purchaser}}":         { "type": "text",   "value": "某省中医院" },
+  "{{agent}}":             { "type": "text",   "value": "国采招标代理有限公司" },
+  "{{notice_publish_time}}": { "type": "date", "value": "2025-06-05", "format": "YYYY年M月D日" },
+  "{{bid_open_time}}":     { "type": "date",   "value": "2025-06-18 09:30", "format": "YYYY年M月D日 HH:MM" },
+  "{{report_date}}":       { "type": "date",   "value": "2025-06-15", "format": "YYYY年M月D日" },
+  "{{contact_info}}":      { "type": "text",   "value": "张经理 010-88888888 zhang@example.com" },
+  "{{#supplier_table}}": {
+    "type": "table_rows",
+    "anchor": "supplier_table",
+    "rows": [
+      { "index": 1, "name": "A 中药材有限公司",  "code": "91110108MA01XXXXXX", "register_time": "2025-06-10 14:22", "status": "已报名" },
+      { "index": 2, "name": "B 制药股份有限公司", "code": "91310115MA02XXXXXX", "register_time": "2025-06-11 09:05", "status": "已报名" },
+      { "index": 3, "name": "C 健康产业有限公司", "code": "",                  "register_time": "2025-06-12 16:48", "status": "已报名" }
+    ]
+  }
+}

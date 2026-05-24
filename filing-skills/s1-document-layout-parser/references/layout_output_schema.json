@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://filing-mvp/schemas/s1-layout-output.json",
+  "title": "S1 Document Layout Output Schema",
+  "description": "S1 版面解析的标准输出结构。所有下游 Skill (S2/S3) 都以此结构为输入。",
+  "type": "object",
+  "required": ["material_id", "file_name", "parse_status", "blocks"],
+  "properties": {
+    "material_id": {
+      "type": "string",
+      "description": "材料唯一 ID,由调用方分配,如 mat_001"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "原始文件名（含扩展名）"
+    },
+    "file_type": {
+      "type": "string",
+      "enum": ["pdf", "docx", "xlsx", "image", "html", "unknown"]
+    },
+    "parse_status": {
+      "type": "string",
+      "enum": ["success", "partial", "failed"],
+      "description": "success=全部解析成功; partial=部分块失败但主体可用; failed=不可用,需重传"
+    },
+    "page_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "engine": {
+      "type": "string",
+      "description": "实际命中的解析引擎,如 pdfplumber / textin / azure_form_recognizer"
+    },
+    "blocks": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Block" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Warning" }
+    }
+  },
+  "definitions": {
+    "Block": {
+      "type": "object",
+      "required": ["block_id", "block_type", "text", "page"],
+      "properties": {
+        "block_id": {
+          "type": "string",
+          "description": "块的稳定 ID,格式 blk_XXXX,后续 Skill 引用时使用"
+        },
+        "block_type": {
+          "type": "string",
+          "enum": [
+            "title",
+            "subtitle",
+            "paragraph",
+            "table",
+            "header",
+            "footer",
+            "image_caption",
+            "list_item",
+            "form_field"
+          ]
+        },
+        "semantic_tag": {
+          "type": "string",
+          "enum": [
+            "project_name", "project_id", "purchase_method", "budget",
+            "package_division", "purchase_content", "purchaser", "agent",
+            "notice_type", "notice_publish_time", "registration_start",
+            "registration_end", "bid_open_time", "bid_close_time",
+            "deadline_for_questions", "question_channel",
+            "supplier_name", "social_credit_code", "contact_info",
+            "extra_archive_requirement", "format_requirement", "temporary_rule",
+            "special_requirement", "supplier_list_header", "supplier_list_row",
+            "unknown"
+          ],
+          "description": "粗粒度语义标签。仅作为路由提示,精确字段值由 S2 抽取"
+        },
+        "text": {
+          "type": "string",
+          "description": "块的纯文本内容,表格块为表格的线性化文本表示"
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bbox": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 4,
+          "maxItems": 4,
+          "description": "[x0, y0, x1, y1] 像素坐标,左上原点"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "table_data": {
+          "type": ["array", "null"],
+          "description": "仅当 block_type=table 时填充,二维数组(行/列),首行视为表头",
+          "items": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "Warning": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "OCR_LOW_CONFIDENCE",
+            "TABLE_NOT_RECOGNIZED",
+            "PAGE_SKIPPED",
+            "ENCODING_FAILED",
+            "ENGINE_FALLBACK",
+            "DEPENDENCY_MISSING",
+            "OCR_REQUIRED",
+            "FILE_CORRUPTED"
+          ]
+        },
+        "message": { "type": "string" },
+        "page": { "type": "integer" },
+        "block_id": { "type": "string" }
+      }
+    }
+  }
+}

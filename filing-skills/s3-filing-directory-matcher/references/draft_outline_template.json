@@ -1,0 +1,87 @@
+{
+  "$comment": "备案初稿章节模板。注入正文时由 S4 完成,这里只定义结构。",
+  "outline_id": "std_outline_v3",
+  "sections": [
+    {
+      "section_id": "sec_001",
+      "section_title": "一、项目基本信息",
+      "directory_item_ids": ["dir_001"],
+      "content_refs": [
+        { "type": "field", "item_key": "project_name" },
+        { "type": "field", "item_key": "project_id" },
+        { "type": "field", "item_key": "purchase_method" },
+        { "type": "field", "item_key": "budget" },
+        { "type": "field", "item_key": "purchaser" },
+        { "type": "field", "item_key": "agent" }
+      ]
+    },
+    {
+      "section_id": "sec_002",
+      "section_title": "二、采购需求",
+      "directory_item_ids": ["dir_002"],
+      "content_refs": [
+        { "type": "field", "item_key": "purchase_content" },
+        { "type": "field", "item_key": "package_division" }
+      ]
+    },
+    {
+      "section_id": "sec_003",
+      "section_title": "三、招标文件",
+      "directory_item_ids": ["dir_003"],
+      "content_refs": [
+        { "type": "material", "directory_item_id": "dir_003" }
+      ]
+    },
+    {
+      "section_id": "sec_004",
+      "section_title": "四、公告信息",
+      "directory_item_ids": ["dir_004"],
+      "content_refs": [
+        { "type": "field", "item_key": "notice_type" },
+        { "type": "field", "item_key": "notice_publish_time" },
+        { "type": "field", "item_key": "registration_start" },
+        { "type": "field", "item_key": "registration_end" },
+        { "type": "field", "item_key": "bid_close_time" },
+        { "type": "field", "item_key": "bid_open_time" },
+        { "type": "field", "item_key": "question_channel" },
+        { "type": "field", "item_key": "contact_info" }
+      ]
+    },
+    {
+      "section_id": "sec_005",
+      "section_title": "五、报名信息",
+      "directory_item_ids": ["dir_005"],
+      "content_refs": [
+        { "type": "table", "source": "supplier_list" }
+      ]
+    },
+    {
+      "section_id": "sec_006",
+      "section_title": "六、评审记录",
+      "directory_item_ids": ["dir_006", "dir_007"],
+      "content_refs": [
+        { "type": "material", "directory_item_id": "dir_006" },
+        { "type": "material", "directory_item_id": "dir_007" }
+      ]
+    },
+    {
+      "section_id": "sec_007",
+      "section_title": "七、结果文件",
+      "directory_item_ids": ["dir_008", "dir_009"],
+      "content_refs": [
+        { "type": "material", "directory_item_id": "dir_008" },
+        { "type": "material", "directory_item_id": "dir_009" }
+      ]
+    },
+    {
+      "section_id": "sec_008",
+      "section_title": "八、特殊归档说明",
+      "directory_item_ids": [],
+      "content_refs": [
+        { "type": "field", "item_key": "extra_archive_requirement" },
+        { "type": "field", "item_key": "format_requirement" },
+        { "type": "field", "item_key": "temporary_rule" }
+      ]
+    }
+  ]
+}

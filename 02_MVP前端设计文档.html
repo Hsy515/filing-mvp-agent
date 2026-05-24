@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MVP 前端设计文档 - 备案文件智能生成</title>
+  <style>
+    :root { --ink:#1f2937; --muted:#667085; --line:#d9e2ec; --brand:#2563eb; --soft:#eef5ff; --bg:#f7f9fc; --ok:#0f766e; --warn:#b45309; --bad:#b42318; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif; line-height:1.7; }
+    .wrap { max-width:1120px; margin:0 auto; padding:40px 28px 64px; }
+    header, section { background:#fff; border:1px solid var(--line); border-radius:8px; padding:28px; margin-bottom:18px; }
+    h1,h2,h3 { line-height:1.3; margin:0 0 14px; }
+    h1 { font-size:30px; } h2 { font-size:22px; } h3 { font-size:17px; margin-top:20px; }
+    p { margin:8px 0; } .meta,.note { color:var(--muted); } a { color:var(--brand); text-decoration:none; font-weight:700; }
+    table { width:100%; border-collapse:collapse; margin:12px 0 4px; }
+    th,td { border:1px solid var(--line); padding:10px 12px; vertical-align:top; }
+    th { background:#eef2f7; text-align:left; }
+    .flow { display:grid; grid-template-columns:repeat(6, 1fr); gap:10px; margin:14px 0; }
+    .step { min-height:86px; padding:12px; border:1px solid var(--line); border-radius:8px; background:#fbfdff; }
+    .step strong { display:block; color:var(--brand); }
+    code { background:#f1f5f9; padding:1px 5px; border-radius:4px; }
+    .ok { color:var(--ok); font-weight:700; } .warn { color:var(--warn); font-weight:700; } .bad { color:var(--bad); font-weight:700; }
+    @media (max-width:900px){ .flow{grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:760px){ .wrap{padding:22px 14px 40px;} header,section{padding:20px;} table{display:block;overflow-x:auto;} .flow{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <p><a href="./MVP文档包_首页.html">返回文档包首页</a></p>
+      <h1>备案文件智能生成 MVP 前端设计文档</h1>
+      <p class="meta">版本：V1.0 | 日期：2026-05-18 | 适用端：PC Web 工作台</p>
+      <p>前端设计围绕备案专员的连续工作流展开。首屏不做营销页，进入系统后直接展示项目列表和待处理状态，帮助用户快速进入材料上传、识别复核、目录匹配和初稿生成。</p>
+    </header>
+
+    <section>
+      <h2>1. 信息架构</h2>
+      <table>
+        <thead>
+          <tr><th>一级页面</th><th>二级区域</th><th>核心任务</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>项目列表</td>
+            <td>筛选、项目表格、新建项目</td>
+            <td>查看项目处理状态，进入某个备案项目。</td>
+          </tr>
+          <tr>
+            <td>项目工作台</td>
+            <td>项目摘要、材料列表、处理进度、关键字段</td>
+            <td>集中完成材料上传、字段复核、目录匹配、初稿生成。</td>
+          </tr>
+          <tr>
+            <td>识别复核页</td>
+            <td>文件预览、字段表单、来源证据、置信度提示</td>
+            <td>核对 AI 识别结果，人工修正字段。</td>
+          </tr>
+          <tr>
+            <td>基础信息抓取表页</td>
+            <td>文件核心信息、公告关键要素、报名信息明细、特殊备注指令</td>
+            <td>确认《备案基础信息抓取表》，处理成功、缺失、异常状态。</td>
+          </tr>
+          <tr>
+            <td>目录匹配页</td>
+            <td>备案目录树、候选材料、匹配依据、异常提示</td>
+            <td>确认材料与目录项的关联关系。</td>
+          </tr>
+          <tr>
+            <td>初稿预览页</td>
+            <td>目录结构、材料预览、审查意见表、生成历史</td>
+            <td>查看和提交备案初稿，进入人工复核。</td>
+          </tr>
+          <tr>
+            <td>复核页</td>
+            <td>复核意见、退回原因、通过确认、操作日志</td>
+            <td>合规经理完成最终确认或退回修改。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>2. 核心用户路径</h2>
+      <div class="flow">
+        <div class="step"><strong>1 新建项目</strong><span>填写项目名称、编号、采购方式。</span></div>
+        <div class="step"><strong>2 上传材料</strong><span>批量上传 PDF、Word、图片、Excel。</span></div>
+        <div class="step"><strong>3 AI 处理</strong><span>展示解析、提取、匹配任务进度。</span></div>
+        <div class="step"><strong>4 抓取表确认</strong><span>核对基础信息、公告要素、报名明细。</span></div>
+        <div class="step"><strong>5 目录归档</strong><span>确认或调整材料目录匹配。</span></div>
+        <div class="step"><strong>6 初稿复核</strong><span>生成初稿并提交人工确认。</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. 页面设计</h2>
+      <h3>3.1 项目列表页</h3>
+      <table>
+        <thead>
+          <tr><th>区域</th><th>内容</th><th>交互</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>顶部工具栏</td>
+            <td>新建项目、搜索项目、状态筛选、日期筛选。</td>
+            <td>点击新建项目打开抽屉或弹窗；搜索按项目名称和编号匹配。</td>
+          </tr>
+          <tr>
+            <td>项目表格</td>
+            <td>项目名称、编号、采购方式、材料数、异常数、当前状态、负责人、更新时间。</td>
+            <td>点击项目名称进入项目工作台；异常数可点击跳转目录匹配页。</td>
+          </tr>
+          <tr>
+            <td>空状态</td>
+            <td>没有项目时显示新建项目入口。</td>
+            <td>引导用户直接创建首个项目。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>3.2 项目工作台</h3>
+      <table>
+        <thead>
+          <tr><th>区域</th><th>内容</th><th>设计要求</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>项目摘要栏</td>
+            <td>项目名称、编号、采购方式、预算金额、当前状态。</td>
+            <td>重要字段可直接编辑，编辑后需要记录日志。</td>
+          </tr>
+          <tr>
+            <td>步骤导航</td>
+            <td>材料上传、识别复核、目录匹配、初稿生成、人工复核。</td>
+            <td>显示每一步完成度和异常数量。</td>
+          </tr>
+          <tr>
+            <td>材料列表</td>
+            <td>文件名、材料类型、处理状态、匹配目录项、置信度、更新时间。</td>
+            <td>支持批量上传、重新识别、查看原文、删除未使用材料。</td>
+          </tr>
+          <tr>
+            <td>右侧提示栏</td>
+            <td>待复核字段、缺失目录项、异常匹配、最近日志。</td>
+            <td>点击提示跳转对应位置。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>3.3 识别复核页</h3>
+      <table>
+        <thead>
+          <tr><th>组件</th><th>字段/内容</th><th>交互规则</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>文件预览区</td>
+            <td>原文件、OCR 文本、页码或段落位置。</td>
+            <td>点击字段来源时，预览区定位到对应页或段落。</td>
+          </tr>
+          <tr>
+            <td>字段复核表</td>
+            <td>字段名、AI 结果、置信度、来源、人工修正值。</td>
+            <td>低置信度字段默认标黄；人工修改后状态变为已确认。</td>
+          </tr>
+          <tr>
+            <td>保存区</td>
+            <td>保存、重跑识别、提交目录匹配。</td>
+            <td>必填字段为空时不能提交目录匹配。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>3.4 基础信息抓取表页</h3>
+      <table>
+        <thead>
+          <tr><th>区域</th><th>内容</th><th>交互规则</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>抓取表总览</td>
+            <td>展示成功、缺失、异常数量，以及可进入目录匹配的完成度。</td>
+            <td>存在异常时允许继续保存草稿，但提交初稿前必须确认处理意见。</td>
+          </tr>
+          <tr>
+            <td>文件核心信息</td>
+            <td>项目名称、项目编号、采购方式、预算金额、包件划分、采购内容、采购人、代理机构、公告发布时间。</td>
+            <td>每个字段显示 AI 结果、来源、状态、校验结果和人工确认值。</td>
+          </tr>
+          <tr>
+            <td>公告关键要素</td>
+            <td>公告类型、报名起止时间、响应文件递交时间、开标时间、质疑投诉渠道、联系方式。</td>
+            <td>时间字段需要展示顺序校验结果，例如报名截止时间应早于开标时间。</td>
+          </tr>
+          <tr>
+            <td>报名信息明细</td>
+            <td>供应商名称、统一社会信用代码、报名时间、报名状态、联系方式。</td>
+            <td>按供应商形成可展开明细，缺失统一社会信用代码或联系方式时标记异常。</td>
+          </tr>
+          <tr>
+            <td>特殊备注指令</td>
+            <td>项目级临时或永久性备案特殊要求。</td>
+            <td>确认后的备注进入目录匹配和初稿生成提示栏。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>3.5 目录匹配页</h3>
+      <table>
+        <thead>
+          <tr><th>区域</th><th>内容</th><th>状态展示</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>备案目录树</td>
+            <td>目录编号、目录名称、必填标识、匹配材料。</td>
+            <td><span class="ok">已匹配</span>、<span class="warn">待补充</span>、<span class="bad">存在异常</span>、待替换。</td>
+          </tr>
+          <tr>
+            <td>候选材料列表</td>
+            <td>材料名、类型、提取关键词、匹配置信度。</td>
+            <td>按置信度排序，可手动拖拽或选择匹配。</td>
+          </tr>
+          <tr>
+            <td>匹配依据抽屉</td>
+            <td>文件名依据、文本关键词、字段一致性、AI 说明。</td>
+            <td>用户能看到为什么匹配到该目录项。</td>
+          </tr>
+          <tr>
+            <td>操作栏</td>
+            <td>确认匹配、标记缺失、标记待替换、忽略该项、重新匹配。</td>
+            <td>每次人工调整记录到日志。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>3.6 初稿预览页</h3>
+      <table>
+        <thead>
+          <tr><th>区域</th><th>内容</th><th>交互</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>目录导航</td>
+            <td>按标准备案目录展示章节和材料。</td>
+            <td>点击目录项定位到材料预览。</td>
+          </tr>
+          <tr>
+            <td>初稿预览</td>
+            <td>组装后的备案初稿，可显示材料顺序和缺失占位。</td>
+            <td>支持刷新生成、手动调整顺序、移除或补充材料。</td>
+          </tr>
+          <tr>
+            <td>审查意见表</td>
+            <td>缺失项、错误项、异常项、修正建议。</td>
+            <td>用户处理后可标记为已解决。</td>
+          </tr>
+          <tr>
+            <td>提交复核</td>
+            <td>提交说明、复核人、提交按钮。</td>
+            <td>存在强制异常时禁止提交，需先确认或说明。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. 前端状态与提示</h2>
+      <table>
+        <thead>
+          <tr><th>场景</th><th>显示方式</th><th>用户可操作</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>上传中</td><td>文件行展示进度条和百分比。</td><td>取消上传。</td></tr>
+          <tr><td>AI 处理中</td><td>项目步骤导航展示处理中状态。</td><td>可离开页面，返回后继续查看进度。</td></tr>
+          <tr><td>识别失败</td><td>材料状态标红，提示失败原因。</td><td>重新识别或手动录入。</td></tr>
+          <tr><td>低置信度</td><td>字段或匹配项标黄。</td><td>查看来源、人工确认或修改。</td></tr>
+          <tr><td>抓取表异常</td><td>抓取项标红，显示异常原因和修正入口。</td><td>修改确认值、补充材料或填写处理说明。</td></tr>
+          <tr><td>目录缺失</td><td>目录项标为待补充。</td><td>上传补充材料或标记暂缺原因。</td></tr>
+          <tr><td>复核退回</td><td>项目状态显示已退回，突出退回意见。</td><td>按意见修改后重新提交。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>5. 前端数据对象</h2>
+      <table>
+        <thead>
+          <tr><th>对象</th><th>关键字段</th><th>用途</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Project</td>
+            <td><code>id</code>、<code>name</code>、<code>code</code>、<code>procurementMethod</code>、<code>status</code></td>
+            <td>项目列表、项目摘要、权限判断。</td>
+          </tr>
+          <tr>
+            <td>Material</td>
+            <td><code>id</code>、<code>fileName</code>、<code>fileType</code>、<code>parseStatus</code>、<code>matchStatus</code></td>
+            <td>材料列表、文件预览、目录匹配。</td>
+          </tr>
+          <tr>
+            <td>ExtractedField</td>
+            <td><code>fieldKey</code>、<code>value</code>、<code>confidence</code>、<code>source</code>、<code>reviewStatus</code></td>
+            <td>字段复核和来源定位。</td>
+          </tr>
+          <tr>
+            <td>DirectoryItem</td>
+            <td><code>id</code>、<code>code</code>、<code>name</code>、<code>required</code>、<code>status</code></td>
+            <td>备案目录树和缺失检查。</td>
+          </tr>
+          <tr>
+            <td>MatchResult</td>
+            <td><code>directoryItemId</code>、<code>materialId</code>、<code>confidence</code>、<code>reason</code>、<code>status</code></td>
+            <td>展示匹配依据和人工调整。</td>
+          </tr>
+          <tr>
+            <td>Draft</td>
+            <td><code>id</code>、<code>version</code>、<code>status</code>、<code>sections</code>、<code>reviewSummary</code></td>
+            <td>初稿预览、提交复核、版本记录。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>6. 设计验收标准</h2>
+      <table>
+        <thead>
+          <tr><th>验收项</th><th>通过标准</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>核心路径</td><td>用户能从项目创建一直完成初稿提交，不需要跳出系统记录关键信息。</td></tr>
+          <tr><td>结果可复核</td><td>识别字段、目录匹配和初稿异常都能看到来源和修改入口。</td></tr>
+          <tr><td>状态清晰</td><td>每份材料、每个目录项、每份初稿都有明确状态。</td></tr>
+          <tr><td>错误可恢复</td><td>识别失败、上传失败、匹配错误时，用户有重试或人工修正入口。</td></tr>
+          <tr><td>适合桌面办公</td><td>表格、目录树和预览区域支持大量材料浏览，不把核心操作藏在过深层级。</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

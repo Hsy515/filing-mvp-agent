@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MVP 数据库设计文档 - 备案文件智能生成</title>
+  <style>
+    :root { --ink:#1f2937; --muted:#667085; --line:#d9e2ec; --brand:#2563eb; --soft:#eef5ff; --bg:#f7f9fc; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif; line-height:1.7; }
+    .wrap { max-width:1120px; margin:0 auto; padding:40px 28px 64px; }
+    header, section { background:#fff; border:1px solid var(--line); border-radius:8px; padding:28px; margin-bottom:18px; }
+    h1,h2,h3 { line-height:1.3; margin:0 0 14px; }
+    h1 { font-size:30px; } h2 { font-size:22px; } h3 { font-size:17px; margin-top:20px; }
+    p { margin:8px 0; } .meta,.note { color:var(--muted); } a { color:var(--brand); text-decoration:none; font-weight:700; }
+    table { width:100%; border-collapse:collapse; margin:12px 0 4px; }
+    th,td { border:1px solid var(--line); padding:10px 12px; vertical-align:top; }
+    th { background:#eef2f7; text-align:left; }
+    code, pre { background:#f1f5f9; border-radius:4px; }
+    code { padding:1px 5px; } pre { padding:14px; overflow:auto; }
+    @media (max-width:760px){ .wrap{padding:22px 14px 40px;} header,section{padding:20px;} table{display:block;overflow-x:auto;} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <p><a href="./MVP文档包_首页.html">返回文档包首页</a></p>
+      <h1>备案文件智能生成 MVP 数据库设计文档</h1>
+      <p class="meta">版本：V1.0 | 日期：2026-05-18 | 建议数据库：PostgreSQL 或兼容关系型数据库</p>
+      <p>数据库设计以可追踪为优先原则。首版不仅要存最终结果，也要存材料、识别字段、目录匹配、AI 置信度、人工修正和复核记录，确保后续能解释结果从哪里来、是谁改过、为什么通过或退回。</p>
+    </header>
+
+    <section>
+      <h2>1. 核心实体关系</h2>
+      <pre>users 1---n projects
+projects 1---n materials
+materials 1---n extracted_fields
+projects 1---n basic_info_extract_items
+projects 1---n directory_matches n---1 directory_items
+projects 1---n filing_drafts 1---n draft_sections
+projects 1---n review_records
+projects 1---n ai_tasks
+users 1---n audit_logs</pre>
+    </section>
+
+    <section>
+      <h2>2. 表结构设计</h2>
+      <h3>2.1 users 用户表</h3>
+      <table>
+        <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>id</td><td>bigint / uuid</td><td>主键</td></tr>
+          <tr><td>name</td><td>varchar(64)</td><td>用户姓名</td></tr>
+          <tr><td>account</td><td>varchar(64)</td><td>登录账号，唯一</td></tr>
+          <tr><td>role</td><td>varchar(32)</td><td>admin、specialist、manager</td></tr>
+          <tr><td>status</td><td>varchar(16)</td><td>active、disabled</td></tr>
+          <tr><td>created_at / updated_at</td><td>timestamp</td><td>创建和更新时间</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.2 projects 项目表</h3>
+      <table>
+        <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>id</td><td>bigint / uuid</td><td>项目主键</td></tr>
+          <tr><td>project_name</td><td>varchar(200)</td><td>项目名称</td></tr>
+          <tr><td>project_code</td><td>varchar(100)</td><td>项目编号，同组织下唯一</td></tr>
+          <tr><td>procurement_method</td><td>varchar(50)</td><td>采购方式</td></tr>
+          <tr><td>budget_amount</td><td>decimal(14,2)</td><td>预算金额，可为空</td></tr>
+          <tr><td>purchaser_name</td><td>varchar(200)</td><td>采购人</td></tr>
+          <tr><td>agency_name</td><td>varchar(200)</td><td>代理机构</td></tr>
+          <tr><td>status</td><td>varchar(32)</td><td>draft、processing、reviewing、approved、returned</td></tr>
+          <tr><td>directory_template_id</td><td>bigint / uuid</td><td>使用的备案目录模板</td></tr>
+          <tr><td>owner_id</td><td>bigint / uuid</td><td>负责人用户 ID</td></tr>
+          <tr><td>created_at / updated_at</td><td>timestamp</td><td>创建和更新时间</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.3 file_objects 文件对象表</h3>
+      <table>
+        <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>id</td><td>bigint / uuid</td><td>文件对象主键</td></tr>
+          <tr><td>storage_key</td><td>varchar(500)</td><td>文件存储路径或对象存储 key</td></tr>
+          <tr><td>original_name</td><td>varchar(255)</td><td>原始文件名</td></tr>
+          <tr><td>mime_type</td><td>varchar(100)</td><td>文件类型</td></tr>
+          <tr><td>file_size</td><td>bigint</td><td>文件大小</td></tr>
+          <tr><td>checksum</td><td>varchar(128)</td><td>文件哈希，用于去重和追踪</td></tr>
+          <tr><td>uploaded_by</td><td>bigint / uuid</td><td>上传人</td></tr>
+          <tr><td>created_at</td><td>timestamp</td><td>上传时间</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.4 materials 材料表</h3>
+      <table>
+        <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>id</td><td>bigint / uuid</td><td>材料主键</td></tr>
+          <tr><td>project_id</td><td>bigint / uuid</td><td>所属项目</td></tr>
+          <tr><td>file_object_id</td><td>bigint / uuid</td><td>关联文件</td></tr>
+          <tr><td>material_name</td><td>varchar(255)</td><td>材料名称，可由文件名带入</td></tr>
+          <tr><td>material_type</td><td>varchar(64)</td><td>招标文件、公告、委托协议、评审报告、签到表、回扫件等</td></tr>
+          <tr><td>parse_status</td><td>varchar(32)</td><td>uploaded、parsing、parsed、extracting、extracted、failed</td></tr>
+          <tr><td>match_status</td><td>varchar(32)</td><td>unmatched、matched、exception</td></tr>
+          <tr><td>ocr_text</td><td>text</td><td>解析文本或 OCR 文本</td></tr>
+          <tr><td>page_count</td><td>integer</td><td>页数</td></tr>
+          <tr><td>error_message</td><td>text</td><td>解析失败原因</td></tr>
+          <tr><td>created_at / updated_at</td><td>timestamp</td><td>创建和更新时间</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.5 extracted_fields 提取字段表</h3>
+      <table>
+        <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>id</td><td>bigint / uuid</td><td>字段主键</td></tr>
+          <tr><td>project_id</td><td>bigint / uuid</td><td>所属项目</td></tr>
+          <tr><td>material_id</td><td>bigint / uuid</td><td>来源材料，可为空</td></tr>
+          <tr><td>field_key</td><td>varchar(100)</td><td>字段编码，如 project_name、project_code</td></tr>
+          <tr><td>field_name</td><td>varchar(100)</td><td>字段中文名</td></tr>
+          <tr><td>ai_value</td><td>text</td><td>AI 原始提取值</td></tr>
+          <tr><td>confirmed_value</td><td>text</td><td>人工确认或修正值</td></tr>
+          <tr><td>confidence</td><td>decimal(5,4)</td><td>置信度，0 到 1</td></tr>
+          <tr><td>source_locator</td><td>jsonb</td><td>来源页码、段落、坐标或文本片段</td></tr>
+          <tr><td>review_status</td><td>varchar(32)</td><td>pending、confirmed、corrected、ignored</td></tr>
+          <tr><td>created_at / updated_at</td><td>timestamp</td><td>创建和更新时间</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.6 directory_templates 与 directory_items 目录模板表</h3>
+      <h3>2.6 basic_info_extract_items 备案基础信息抓取项表</h3>
+      <table>
+        <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>id</td><td>bigint / uuid</td><td>抓取项主键</td></tr>
+          <tr><td>project_id</td><td>bigint / uuid</td><td>所属项目</td></tr>
+          <tr><td>material_id</td><td>bigint / uuid</td><td>主要来源材料，可为空</td></tr>
+          <tr><td>category</td><td>varchar(64)</td><td>file_core、notice_key、supplier_signup、special_instruction</td></tr>
+          <tr><td>item_key</td><td>varchar(100)</td><td>抓取项编码，如 project_name、bid_open_time</td></tr>
+          <tr><td>item_name</td><td>varchar(100)</td><td>抓取项中文名</td></tr>
+          <tr><td>ai_value</td><td>text</td><td>AI 抓取结果</td></tr>
+          <tr><td>confirmed_value</td><td>text</td><td>人工确认或修正值</td></tr>
+          <tr><td>source_locator</td><td>jsonb</td><td>来源材料、页码、段落、文本片段</td></tr>
+          <tr><td>extract_status</td><td>varchar(32)</td><td>success、missing、exception、confirmed</td></tr>
+          <tr><td>validation_result</td><td>jsonb</td><td>数据校验结果和异常说明</td></tr>
+          <tr><td>confidence</td><td>decimal(5,4)</td><td>置信度，0 到 1</td></tr>
+          <tr><td>remark</td><td>text</td><td>人工处理说明</td></tr>
+          <tr><td>created_at / updated_at</td><td>timestamp</td><td>创建和更新时间</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.7 directory_templates 与 directory_items 目录模板表</h3>
+      <table>
+        <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>directory_templates</td>
+            <td>id、template_name、version、status、created_by、created_at</td>
+            <td>备案标准目录模板。</td>
+          </tr>
+          <tr>
+            <td>directory_items</td>
+            <td>id、template_id、parent_id、item_code、item_name、sort_order、required、expected_material_type、match_keywords</td>
+            <td>目录项和排序规则，支持树形目录。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>2.8 directory_matches 目录匹配表</h3>
+      <table>
+        <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>id</td><td>bigint / uuid</td><td>匹配记录主键</td></tr>
+          <tr><td>project_id</td><td>bigint / uuid</td><td>所属项目</td></tr>
+          <tr><td>directory_item_id</td><td>bigint / uuid</td><td>目录项</td></tr>
+          <tr><td>material_id</td><td>bigint / uuid</td><td>匹配材料，可为空</td></tr>
+          <tr><td>match_status</td><td>varchar(32)</td><td>matched、missing、needs_replace、exception、ignored</td></tr>
+          <tr><td>confidence</td><td>decimal(5,4)</td><td>AI 匹配置信度</td></tr>
+          <tr><td>match_reason</td><td>text</td><td>匹配依据说明</td></tr>
+          <tr><td>ai_output</td><td>jsonb</td><td>AI 原始匹配输出</td></tr>
+          <tr><td>confirmed_by</td><td>bigint / uuid</td><td>人工确认人</td></tr>
+          <tr><td>confirmed_at</td><td>timestamp</td><td>人工确认时间</td></tr>
+          <tr><td>remark</td><td>text</td><td>人工备注</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.9 filing_drafts 与 draft_sections 初稿表</h3>
+      <table>
+        <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>filing_drafts</td>
+            <td>id、project_id、version_no、status、generated_by、review_summary、created_at</td>
+            <td>备案初稿主记录，支持多版本。</td>
+          </tr>
+          <tr>
+            <td>draft_sections</td>
+            <td>id、draft_id、directory_item_id、material_id、section_order、section_title、section_status、issue_message</td>
+            <td>初稿中的每个目录段落或材料占位。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>2.10 review_records 复核记录表</h3>
+      <table>
+        <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>id</td><td>bigint / uuid</td><td>复核记录主键</td></tr>
+          <tr><td>project_id</td><td>bigint / uuid</td><td>项目 ID</td></tr>
+          <tr><td>draft_id</td><td>bigint / uuid</td><td>初稿 ID</td></tr>
+          <tr><td>reviewer_id</td><td>bigint / uuid</td><td>复核人</td></tr>
+          <tr><td>action</td><td>varchar(32)</td><td>submit、approve、return</td></tr>
+          <tr><td>comment</td><td>text</td><td>复核意见</td></tr>
+          <tr><td>created_at</td><td>timestamp</td><td>操作时间</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.11 ai_tasks 与 audit_logs 任务和日志表</h3>
+      <table>
+        <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>ai_tasks</td>
+            <td>id、project_id、material_id、task_type、status、progress、input_payload、output_payload、error_message、started_at、finished_at</td>
+            <td>记录解析、提取、匹配、生成任务。</td>
+          </tr>
+          <tr>
+            <td>audit_logs</td>
+            <td>id、actor_id、project_id、object_type、object_id、action、before_data、after_data、created_at</td>
+            <td>记录关键人工和系统操作。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 状态枚举</h2>
+      <table>
+        <thead><tr><th>枚举</th><th>取值</th></tr></thead>
+        <tbody>
+          <tr><td>project.status</td><td>draft、processing、reviewing、approved、returned</td></tr>
+          <tr><td>material.parse_status</td><td>uploaded、parsing、parsed、extracting、extracted、failed</td></tr>
+          <tr><td>directory_matches.match_status</td><td>matched、missing、needs_replace、exception、ignored</td></tr>
+          <tr><td>filing_drafts.status</td><td>generated、editing、submitted、approved、returned</td></tr>
+          <tr><td>ai_tasks.status</td><td>pending、running、success、failed、cancelled</td></tr>
+          <tr><td>extracted_fields.review_status</td><td>pending、confirmed、corrected、ignored</td></tr>
+          <tr><td>basic_info_extract_items.extract_status</td><td>success、missing、exception、confirmed</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. 索引建议</h2>
+      <table>
+        <thead><tr><th>表</th><th>索引</th><th>原因</th></tr></thead>
+        <tbody>
+          <tr><td>projects</td><td>project_code、status、owner_id</td><td>项目查询和编号唯一校验。</td></tr>
+          <tr><td>materials</td><td>project_id、parse_status、match_status</td><td>项目工作台材料列表。</td></tr>
+          <tr><td>extracted_fields</td><td>project_id + field_key、material_id</td><td>字段聚合和来源定位。</td></tr>
+          <tr><td>basic_info_extract_items</td><td>project_id + category、project_id + item_key、extract_status</td><td>抓取表展示、异常筛选和人工确认。</td></tr>
+          <tr><td>directory_matches</td><td>project_id + directory_item_id、material_id、match_status</td><td>目录树展示和异常筛选。</td></tr>
+          <tr><td>filing_drafts</td><td>project_id + version_no、status</td><td>初稿版本查询。</td></tr>
+          <tr><td>audit_logs</td><td>project_id、actor_id、created_at</td><td>审计追溯。</td></tr>
+          <tr><td>ai_tasks</td><td>project_id、task_type、status</td><td>任务进度查询。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>5. 数据流向</h2>
+      <table>
+        <thead><tr><th>步骤</th><th>写入表</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>创建项目</td><td>projects、audit_logs</td><td>创建项目主记录和操作日志。</td></tr>
+          <tr><td>上传材料</td><td>file_objects、materials、audit_logs</td><td>保存文件对象和材料记录。</td></tr>
+          <tr><td>解析识别</td><td>ai_tasks、materials、extracted_fields</td><td>保存 OCR 文本、提取字段和来源。</td></tr>
+          <tr><td>生成基础信息抓取表</td><td>basic_info_extract_items、ai_tasks</td><td>按四类抓取项保存 AI 结果、来源、状态和校验结果。</td></tr>
+          <tr><td>人工修正字段</td><td>extracted_fields、audit_logs</td><td>写入 confirmed_value 和修改日志。</td></tr>
+          <tr><td>人工确认抓取表</td><td>basic_info_extract_items、audit_logs</td><td>写入 confirmed_value、状态和处理说明。</td></tr>
+          <tr><td>目录匹配</td><td>directory_matches、ai_tasks</td><td>生成每个目录项的匹配结果。</td></tr>
+          <tr><td>人工调整匹配</td><td>directory_matches、audit_logs</td><td>覆盖匹配状态和备注。</td></tr>
+          <tr><td>生成初稿</td><td>filing_drafts、draft_sections、ai_tasks</td><td>保存初稿版本和审查意见。</td></tr>
+          <tr><td>复核</td><td>review_records、projects、filing_drafts、audit_logs</td><td>记录通过或退回，更新项目和初稿状态。</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

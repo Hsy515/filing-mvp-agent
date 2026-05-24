@@ -1,0 +1,83 @@
+{
+  "material_id": "mat_001",
+  "file_name": "2025年中药饮片采购项目-招标文件.pdf",
+  "file_type": "pdf",
+  "parse_status": "success",
+  "page_count": 38,
+  "engine": "pdfplumber",
+  "blocks": [
+    {
+      "block_id": "blk_0001",
+      "block_type": "title",
+      "semantic_tag": "project_name",
+      "text": "2025年中药饮片采购项目招标文件",
+      "page": 1,
+      "bbox": [120, 60, 980, 100],
+      "confidence": 0.99,
+      "table_data": null
+    },
+    {
+      "block_id": "blk_0002",
+      "block_type": "paragraph",
+      "semantic_tag": "project_id",
+      "text": "项目编号:GCZB-2025-0117",
+      "page": 1,
+      "bbox": [120, 120, 600, 145],
+      "confidence": 0.98,
+      "table_data": null
+    },
+    {
+      "block_id": "blk_0003",
+      "block_type": "paragraph",
+      "semantic_tag": "purchase_method",
+      "text": "采购方式:公开招标",
+      "page": 1,
+      "bbox": [120, 150, 600, 175],
+      "confidence": 0.98,
+      "table_data": null
+    },
+    {
+      "block_id": "blk_0004",
+      "block_type": "paragraph",
+      "semantic_tag": "budget",
+      "text": "预算金额:人民币 1,250,000.00 元",
+      "page": 1,
+      "bbox": [120, 180, 600, 205],
+      "confidence": 0.97,
+      "table_data": null
+    },
+    {
+      "block_id": "blk_0005",
+      "block_type": "paragraph",
+      "semantic_tag": "bid_open_time",
+      "text": "开标时间:2025年6月18日 09:30",
+      "page": 2,
+      "bbox": [120, 210, 600, 235],
+      "confidence": 0.95,
+      "table_data": null
+    },
+    {
+      "block_id": "blk_0010",
+      "block_type": "table",
+      "semantic_tag": "supplier_list_header",
+      "text": "供应商名称 统一社会信用代码 报名时间 报名状态",
+      "page": 5,
+      "bbox": [80, 300, 1000, 580],
+      "confidence": 0.92,
+      "table_data": [
+        ["供应商名称", "统一社会信用代码", "报名时间", "报名状态"],
+        ["A 中药材有限公司", "91110108MA01XXXXXX", "2025-06-10 14:22", "已报名"],
+        ["B 制药股份有限公司", "91310115MA02XXXXXX", "2025-06-11 09:05", "已报名"],
+        ["C 健康产业有限公司", "", "2025-06-12 16:48", "已报名"]
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "OCR_LOW_CONFIDENCE",
+      "message": "第 5 页表格中 C 健康产业有限公司的统一社会信用代码识别失败,需人工补录",
+      "page": 5,
+      "block_id": "blk_0010"
+    }
+  ]
+}

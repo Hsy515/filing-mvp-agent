@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://filing-mvp/schemas/s2-extraction.json",
+  "title": "S2 Basic Info Extraction Output Schema",
+  "type": "object",
+  "required": ["basic_info_sheet"],
+  "properties": {
+    "basic_info_sheet": {
+      "type": "object",
+      "required": ["project_id", "items"],
+      "properties": {
+        "project_id": { "type": "string" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/SheetItem" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "SheetItem": {
+      "type": "object",
+      "required": ["category", "item_key", "item_name", "extract_status"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": ["file_core", "notice_key", "supplier_registration", "special_remark"]
+        },
+        "item_key": {
+          "type": "string",
+          "description": "字段 key,与 field_dictionary.json 对应。供应商行字段格式 supplier_<n>.<key>"
+        },
+        "item_name": { "type": "string" },
+        "ai_value": {
+          "type": ["string", "number", "null"],
+          "description": "AI 抽取的值,归一后的格式"
+        },
+        "confirmed_value": {
+          "type": ["string", "number", "null"],
+          "description": "人工确认后的值;为空表示未确认,以 ai_value 为准"
+        },
+        "extract_status": {
+          "type": "string",
+          "enum": ["success", "missing", "exception"]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "source": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["material_id", "file_name", "block_id"],
+              "properties": {
+                "material_id": { "type": "string" },
+                "file_name": { "type": "string" },
+                "page": { "type": "integer" },
+                "block_id": { "type": "string" },
+                "excerpt": { "type": "string", "maxLength": 200 }
+              }
+            }
+          ]
+        },
+        "validation_result": {
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "status": { "type": "string", "enum": ["passed", "warning", "failed", "skipped"] },
+            "message": { "type": "string" }
+          }
+        },
+        "review_required": { "type": "boolean" }
+      }
+    }
+  }
+}
