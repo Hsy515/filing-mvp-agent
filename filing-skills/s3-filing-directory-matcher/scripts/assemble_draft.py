@@ -44,6 +44,10 @@ def assemble_draft_outline(
 
         for ref in sec.get("content_refs", []):
             resolved, ok = _resolve_ref(ref, match_by_dir, field_index)
+            if not ok and ref.get("required", True) is False:
+                resolved["optional"] = True
+                resolved["resolution"] = resolved.get("resolution", "missing") + "_optional"
+                ok = True
             section["content_refs"].append(resolved)
             if not ok:
                 section["missing_refs"].append(resolved)

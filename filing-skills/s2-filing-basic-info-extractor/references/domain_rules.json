@@ -1,0 +1,40 @@
+{
+  "$comment": "领域适配规则。业务侧可以在不改代码的情况下补字段别名和跨字段约束。",
+  "version": "1.1",
+  "field_aliases": {
+    "project_name": ["采购项目", "项目", "工程名称"],
+    "project_id": ["采购编号", "招标编号", "项目代码", "标段编号"],
+    "purchase_method": ["招标方式", "采购组织形式"],
+    "budget": ["最高限价", "采购预算", "控制价", "预算价"],
+    "package_count": ["项目包数", "包数", "标包数量"],
+    "purchase_content": ["采购需求", "采购范围", "标的名称", "服务内容"],
+    "purchaser": ["采购人名称", "采购单位", "招标人", "业主单位"],
+    "agent": ["采购代理", "招标代理", "代理单位"],
+    "notice_publish_time": ["发布日期", "公告日期"],
+    "registration_start": ["获取文件开始时间", "报名起始时间"],
+    "registration_end": ["获取文件截止时间", "报名结束时间"],
+    "bid_close_time": ["投标截止时间", "响应文件提交截止时间", "递交截止时间"],
+    "bid_open_time": ["开启时间", "响应文件开启时间", "评标时间"],
+    "question_channel": ["质疑渠道", "投诉方式", "异议渠道"],
+    "contact_info": ["联系人及电话", "联系方式", "联系电话"],
+    "winner_name": ["中标人", "中标供应商", "成交供应商", "中标单位", "成交单位", "中标（成交）单位"],
+    "winning_amount": ["中标金额", "成交金额", "中标价", "成交价", "中标（成交）金额"],
+    "project_manager": ["项目负责人", "负责人", "项目经理"],
+    "project_team_members": ["项目小组成员", "项目组成员", "小组成员"],
+    "acceptance_note": ["验收情况说明", "验收情况", "履约验收说明", "验收说明"],
+    "temporary_rule": ["统一下浮率", "动态结算", "据实结算", "临时调整"],
+    "extra_archive_requirement": ["另需归档", "补充材料", "归档要求"]
+  },
+  "logic_required_pairs": [
+    {
+      "when": "temporary_rule",
+      "require": "format_requirement",
+      "message": "命中临时规则时,需同步确认是否有指定格式或模板要求。"
+    },
+    {
+      "when": "extra_archive_requirement",
+      "require": "purchase_content",
+      "message": "额外归档要求需要结合采购内容确认适用范围。"
+    }
+  ]
+}

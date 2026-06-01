@@ -1,6 +1,6 @@
 {
   "$comment": "备案基础信息抓取字段权威清单。新增字段时必须更新此文件,并同步 extraction_schema.json 中的枚举。",
-  "version": "1.1",
+  "version": "1.2",
   "fields": [
     {
       "category": "file_core",
@@ -43,6 +43,15 @@
       "type": "string",
       "required": false,
       "source_hint": "如'分两个标段'或'不分包'"
+    },
+    {
+      "category": "file_core",
+      "key": "package_count",
+      "name": "项目包数",
+      "type": "integer",
+      "required": false,
+      "validator": "validate_positive_integer",
+      "source_hint": "备案登记表中的项目包数,可由包件划分人工确认"
     },
     {
       "category": "file_core",
@@ -171,6 +180,51 @@
       "type": "string",
       "required": false,
       "is_row_field": true
+    },
+    {
+      "category": "award_result",
+      "key": "winner_name",
+      "name": "中标人",
+      "type": "string",
+      "required": false,
+      "aliases": ["中标供应商", "成交供应商", "中标（成交）单位", "中标单位", "成交单位"],
+      "source_hint": "备案文件、评标报告、中标公告或中标通知书"
+    },
+    {
+      "category": "award_result",
+      "key": "winning_amount",
+      "name": "中标金额",
+      "type": "decimal",
+      "unit": "元",
+      "required": false,
+      "aliases": ["成交金额", "中标价", "成交价", "中标（成交）金额"],
+      "validator": "validate_amount",
+      "source_hint": "备案登记表、评标报告或中标公告"
+    },
+    {
+      "category": "award_result",
+      "key": "project_manager",
+      "name": "项目负责人",
+      "type": "string",
+      "required": false,
+      "aliases": ["负责人", "项目经理"]
+    },
+    {
+      "category": "award_result",
+      "key": "project_team_members",
+      "name": "项目小组成员",
+      "type": "string",
+      "required": false,
+      "aliases": ["项目小组", "项目组成员", "小组成员"]
+    },
+    {
+      "category": "award_result",
+      "key": "acceptance_note",
+      "name": "验收情况说明",
+      "type": "string",
+      "required": false,
+      "aliases": ["验收情况", "履约验收说明", "验收说明"],
+      "source_hint": "备案登记表默认文案或履约验收材料"
     },
     {
       "category": "special_remark",

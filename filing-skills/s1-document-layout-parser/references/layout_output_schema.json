@@ -16,7 +16,7 @@
     },
     "file_type": {
       "type": "string",
-      "enum": ["pdf", "docx", "xlsx", "image", "html", "unknown"]
+      "enum": ["pdf", "docx", "doc_legacy", "xlsx", "image", "html", "unknown"]
     },
     "parse_status": {
       "type": "string",
@@ -38,6 +38,10 @@
     "warnings": {
       "type": "array",
       "items": { "$ref": "#/definitions/Warning" }
+    },
+    "quality_report": {
+      "type": "object",
+      "description": "解析质量报告,用于决定是否允许进入 S2 自动抽取。"
     }
   },
   "definitions": {
@@ -67,11 +71,13 @@
           "type": "string",
           "enum": [
             "project_name", "project_id", "purchase_method", "budget",
-            "package_division", "purchase_content", "purchaser", "agent",
+            "package_division", "package_count", "purchase_content", "purchaser", "agent",
             "notice_type", "notice_publish_time", "registration_start",
             "registration_end", "bid_open_time", "bid_close_time",
             "deadline_for_questions", "question_channel",
             "supplier_name", "social_credit_code", "contact_info",
+            "winner_name", "winning_amount", "project_manager",
+            "project_team_members", "acceptance_note",
             "extra_archive_requirement", "format_requirement", "temporary_rule",
             "special_requirement", "supplier_list_header", "supplier_list_row",
             "unknown"
@@ -105,6 +111,10 @@
             "type": "array",
             "items": { "type": "string" }
           }
+        },
+        "metadata": {
+          "type": "object",
+          "description": "解析来源、OCR 引擎、复杂表格标记等扩展元数据。"
         }
       }
     },
@@ -122,7 +132,9 @@
             "ENGINE_FALLBACK",
             "DEPENDENCY_MISSING",
             "OCR_REQUIRED",
-            "FILE_CORRUPTED"
+            "FILE_CORRUPTED",
+            "TABLE_COMPLEX_LAYOUT",
+            "LEGACY_DOC_REQUIRES_CONVERSION"
           ]
         },
         "message": { "type": "string" },

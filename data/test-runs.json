@@ -1,0 +1,166 @@
+[
+  {
+    "test_id": "test_1779628696622",
+    "file_name": "2025年中药饮片采购项目招标文件（N510116202500005020250303002）(1).docx",
+    "test_case_type": "public_bidding",
+    "extracted_fields": [
+      {
+        "field_key": "file_type",
+        "field_name": "文件类型",
+        "value": "招标文件",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "procurement_method",
+        "field_name": "采购方式",
+        "value": "公开招标",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "project_name",
+        "field_name": "项目名称",
+        "value": "2025年中药饮片采购项目",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "project_no",
+        "field_name": "项目编号",
+        "value": "N5101162025000050",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "budget",
+        "field_name": "采购预算",
+        "value": "3,000,000.00元",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "ceiling_price",
+        "field_name": "最高限价",
+        "value": "2,917,643.00元",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "subject",
+        "field_name": "标的名称",
+        "value": "中药饮片",
+        "review_status": "pending",
+        "remark": ""
+      }
+    ],
+    "matched_template": "公开招标类备案模板",
+    "generated_outputs": {
+      "should_generate_bid_table": true,
+      "should_match_filing_template": true,
+      "directory_placement": [
+        {
+          "template_position": "企业模板匹配",
+          "matched_template_type": "公开招标类备案模板",
+          "template_source": "expected_results"
+        }
+      ],
+      "bid_table_preview": [
+        {
+          "project_name": "2025年中药饮片采购项目",
+          "project_no": "N5101162025000050",
+          "procurement_method": "公开招标",
+          "supplier_name": "未识别 / 需人工补充",
+          "bid_price": "未识别 / 需人工补充",
+          "qualification_status": "未识别 / 需人工补充",
+          "score": "未识别 / 需人工补充"
+        }
+      ],
+      "attachment_classification": []
+    },
+    "review_status": "pending",
+    "created_at": "2026-05-24T13:18:16.622Z"
+  },
+  {
+    "test_id": "test_1779628941773",
+    "file_name": "挂网版-2026年科菁荟跨区域科技交流活动项目.doc",
+    "test_case_type": "competitive_consultation",
+    "extracted_fields": [
+      {
+        "field_key": "file_type",
+        "field_name": "文件类型",
+        "value": "竞争性磋商文件",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "procurement_method",
+        "field_name": "采购方式",
+        "value": "竞争性磋商",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "project_name",
+        "field_name": "项目名称",
+        "value": "2026年“科菁荟”跨区域科技交流活动项目",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "project_no",
+        "field_name": "项目编号",
+        "value": "SCWZDL-202602-KXKJH01",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "budget",
+        "field_name": "采购预算",
+        "value": "missing",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "ceiling_price",
+        "field_name": "最高限价",
+        "value": "missing",
+        "review_status": "pending",
+        "remark": ""
+      },
+      {
+        "field_key": "subject",
+        "field_name": "标的名称",
+        "value": "missing",
+        "review_status": "pending",
+        "remark": ""
+      }
+    ],
+    "matched_template": "竞争性磋商类备案模板",
+    "generated_outputs": {
+      "should_generate_bid_table": true,
+      "should_match_filing_template": true,
+      "directory_placement": [
+        {
+          "template_position": "企业模板匹配",
+          "matched_template_type": "竞争性磋商类备案模板",
+          "template_source": "expected_results"
+        }
+      ],
+      "bid_table_preview": [
+        {
+          "project_name": "2026年“科菁荟”跨区域科技交流活动项目",
+          "project_no": "SCWZDL-202602-KXKJH01",
+          "procurement_method": "竞争性磋商",
+          "supplier_name": "未识别 / 需人工补充",
+          "bid_price": "未识别 / 需人工补充",
+          "qualification_status": "未识别 / 需人工补充",
+          "score": "未识别 / 需人工补充"
+        }
+      ],
+      "attachment_classification": []
+    },
+    "review_status": "pending",
+    "created_at": "2026-05-24T13:22:21.773Z"
+  }
+]

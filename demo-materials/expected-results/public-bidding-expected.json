@@ -1,0 +1,15 @@
+{
+  "test_case_type": "public_bidding",
+  "source_sample_path": "demo-materials/real-test-samples/public-bidding/2025年中药饮片采购项目招标文件（N510116202500005020250303002）(1).docx",
+  "file_name": "2025年中药饮片采购项目招标文件（N510116202500005020250303002）(1).docx",
+  "file_type": "招标文件",
+  "procurement_method": "公开招标",
+  "project_name": "2025年中药饮片采购项目",
+  "project_no": "N5101162025000050",
+  "budget": "3,000,000.00元",
+  "ceiling_price": "2,917,643.00元",
+  "subject": "中药饮片",
+  "should_generate_bid_table": true,
+  "should_match_filing_template": true,
+  "matched_template_type": "公开招标类备案模板"
+}

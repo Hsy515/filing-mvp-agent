@@ -32,7 +32,7 @@ S3 处理"备案归档"——把材料归到目录里;但开评标过程还需�
 | `compliance_review` | 符合性审查表 | 供应商列表 + 项目基本字段 | `assets/templates/符合性审查表.docx`(待补) |
 | `score_summary` | 得分汇总表 | 供应商列表 + 评分规则(外部) | `assets/templates/得分汇总表.xlsx`(待补) |
 | `attendance` | 签到表 | 供应商列表 | `assets/templates/签到表.docx`(待补) |
-| `bid_opening_record` | 开标记录表 | 项目字段 + 供应商列表 + 唱标价(外部) | `assets/templates/开标记录表.xlsx`(待补) |
+| `bid_opening_record` | 开标记录表 | 项目字段 + 供应商列表 + 唱标价(外部) | `assets/templates/F_bid_opening_MVP.docx`(MVP 已接入第一张开标记录表) |
 
 每种表格的字段映射定义在 `references/table_definitions.json`。**模板文件由模板设计师按 S4 占位符规范提供**,本 Skill 不内嵌二进制模板。
 
@@ -113,8 +113,9 @@ S3 处理"备案归档"——把材料归到目录里;但开评标过程还需�
 ## 首版与后续
 
 **首版只做最小可行**:
-- 提供 `qualification_review` 和 `attendance` 两个表的完整字段定义和样例 mapping
-- 其他表格类型在 `table_definitions.json` 里占位,实际模板和字段补全留给下一版
+- `bid_opening_record` 已接入用户提供的 `F【开标表格】.docx` 第一张"开标记录"表,模板副本为 `assets/templates/F_bid_opening_MVP.docx`
+- `qualification_review` 和 `attendance` 保留字段定义和样例 mapping,但真实模板仍待补
+- 其他复杂评审表格类型在 `table_definitions.json` 里占位或只做审计,实际模板和字段补全留给下一版
 - 演示场景下,如果模板缺失,返回 `status=failed`,`warnings` 里写"模板待补"
 
 **后续扩展**:
@@ -129,3 +130,10 @@ S3 处理"备案归档"——把材料归到目录里;但开评标过程还需�
 - `references/table_definitions.json` — 各表格字段映射(权威)
 - `assets/sample_qualification_review_mapping.json` — 资格审查表 mapping 样例
 - `assets/extension_roadmap.md` — 后续扩展路线
+
+## 反馈修订后的表格生成策略
+
+- 生成前先执行 `definition_checks` 和 `consistency_checks`,检查表格定义、供应商必填字段、重复信用代码、待复核字段。
+- 从 S2 字段取值时,只有 `extract_status=success` 的字段视为可靠;低置信或异常字段会导致 `missing_fields`/`partial`。
+- 支持从 `extra_data.review_items` 生成 `{{#review_item_table}}` 动态评审项行,但所有结论列固定为"待审查",不自动给出通过/不通过。
+- S4 返回的 `audit` 会透传为 `mapping_audit`,用于检查模板占位符是否和 mapping 一致。

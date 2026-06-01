@@ -90,9 +90,11 @@ description: 多源文档版面分析与段落路由。当用户上传招标文�
 
 ```
 project_name, project_id, purchase_method, budget, purchase_content,
-purchaser, agent, notice_publish_time, bid_open_time, bid_close_time,
-deadline_for_questions, supplier_name, social_credit_code, contact_info,
-special_requirement, supplier_list_header, supplier_list_row, unknown
+purchaser, agent, package_count, notice_publish_time, bid_open_time,
+bid_close_time, deadline_for_questions, supplier_name, social_credit_code,
+contact_info, winner_name, winning_amount, project_manager,
+project_team_members, acceptance_note, special_requirement,
+supplier_list_header, supplier_list_row, unknown
 ```
 
 打标依据是块的文本特征（关键词、正则、上下文位置），**不做跨块推理**。
@@ -114,3 +116,14 @@ special_requirement, supplier_list_header, supplier_list_row, unknown
 - `scripts/semantic_tagger.py` — 语义标签词典 + 规则匹配
 - `references/layout_output_schema.json` — 输出 JSON Schema (权威定义)
 - `assets/sample_output.json` — 真实文件的样例输出,可用作回归测试基线
+
+## 反馈修订后的质量闸门
+
+- 扫描 PDF / 图片优先读取 `ocr_text_path`、`ocr_markdown_path`、`ocr_json_path` 或 `ocr_blocks`;未提供时,可通过 `XFEI_OCR_SKILL_PATH` 或同级 `ocr-skill-pdf-image` 调用讯飞 OCR skill。
+- CLI 也支持 `--ocr-text-path`、`--ocr-markdown-path`、`--ocr-json-path`、`--ocr-skill-path`、`--ocr-python`、`--disable-ocr`,可直接把 OCR sidecar 或讯飞 OCR skill 目录传给 S1。
+- 自动调用讯飞 OCR skill 时优先使用 `XFEI_OCR_PYTHON` / `--ocr-python`;未指定时会选择可 `import requests` 的 Python,避免 Codex bundled Python 缺依赖导致 API 调用失败。
+- OCR 结果必须通过 `quality_report.ocr.usable=true` 才能转成 blocks;字符数过少、疑似乱码或低置信结果只写入 `warnings`,不得进入 S2 自动抽取。
+- 不规则表格会标记 `TABLE_COMPLEX_LAYOUT`,并在 block.metadata 写入 `complex_table=true`;下游看到该标记必须进入人工复核或专用表格解析。
+- 动态结算、统一下浮率、地方/行业标准、资格/评审要求等反馈中提到的高风险语义,只作为 `temporary_rule` / `special_requirement` 路由提示,不在 S1 做结论。
+- 已按公开招标备案模板补充 `package_count`、`winner_name`、`winning_amount`、`project_manager`、`project_team_members`、`acceptance_note` 等备案登记字段的路由标签。
+- 老式 `.doc` 会输出 `LEGACY_DOC_REQUIRES_CONVERSION`,要求先另存为 `.docx`;不要把 `.doc` 误走 `python-docx`。

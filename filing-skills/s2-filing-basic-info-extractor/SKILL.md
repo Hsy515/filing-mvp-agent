@@ -52,7 +52,7 @@ S1 把文件切成了语义块,但每个字段的**确切值**还没出来——
     "project_id": "proj_001",
     "items": [
       {
-        "category": "file_core | notice_key | supplier_registration | special_remark",
+        "category": "file_core | notice_key | supplier_registration | award_result | special_remark",
         "item_key": "project_name",
         "item_name": "项目名称",
         "ai_value": "...",
@@ -68,15 +68,16 @@ S1 把文件切成了语义块,但每个字段的**确切值**还没出来——
 }
 ```
 
-## 四大抓取类别(覆盖图片要求)
+## 五类抓取字段
 
-抓取项必须覆盖以下 4 大类共 N 个字段。**字段定义见 `references/field_dictionary.json`,这是唯一权威清单**。
+抓取项必须覆盖以下 5 类字段。**字段定义见 `references/field_dictionary.json`,这是唯一权威清单**。
 
 | category | 包含字段(关键) | 校验要点 |
 |---|---|---|
-| `file_core` 文件核心信息 | project_name, project_id, purchase_method, budget, package_division, purchase_content, purchaser, agent, notice_publish_time | 项目编号格式、金额数值合法、采购方式枚举值 |
+| `file_core` 文件核心信息 | project_name, project_id, purchase_method, budget, package_division, package_count, purchase_content, purchaser, agent, notice_publish_time | 项目编号格式、金额数值合法、采购方式枚举值、项目包数 |
 | `notice_key` 公告关键要素 | notice_type, registration_start, registration_end, bid_close_time, bid_open_time, question_channel, contact_info | 时间节点顺序校验、联系方式格式 |
 | `supplier_registration` 报名信息明细 | supplier_name, social_credit_code, registration_time, registration_status, contact_info(供应商级) | 信用代码 18 位、报名状态枚举 |
+| `award_result` 采购结果/备案登记 | winner_name, winning_amount, project_manager, project_team_members, acceptance_note | 中标金额数值合法;结果字段缺失时进入人工复核 |
 | `special_remark` 特殊备注指令 | extra_archive_requirement, format_requirement, temporary_rule | 项目级临时/永久要求,作为 S3 的约束条件 |
 
 **说明**:`supplier_registration` 类下每个供应商一行,`item_key` 命名为 `supplier_1.name`、`supplier_1.social_credit_code` 这样;允许动态扩展。
@@ -129,4 +130,14 @@ S1 把文件切成了语义块,但每个字段的**确切值**还没出来——
 - `scripts/validators.py` — 单字段校验函数集合
 - `references/extraction_schema.json` — 输出 Schema
 - `references/field_dictionary.json` — 字段权威清单 (key/name/category/type/required)
+- `references/domain_rules.json` — 字段别名、领域词和跨字段动态约束
 - `assets/sample_extraction.json` — 完整样例输出
+
+## 反馈修订后的抽取策略
+
+- 字段抽取不再只依赖 `semantic_tag`;先看标签命中,再用 `references/domain_rules.json` 的字段别名和领域词进行全局回退。
+- 同一字段出现多个不同候选值时,输出 `extract_status=exception`,填充 `candidate_sources` 和 `logic_flags=candidate_conflict`,不自动拍板。
+- 动态定价/统一下浮率/据实结算等表达不得被当作静态预算金额;此类结果必须进入人工复核。
+- 输出新增 `logic_checks`、`review_queue`、`rule_feedback`;用户修正或缺失/异常字段应沉淀到 `domain_rules.json` 或 `field_dictionary.json`,形成后续迭代闭环。
+- 统一社会信用代码执行校验码算法,不是只做长度格式检查。
+- 已按用户提供的公开招标备案模板补充 `award_result` 类字段和 `package_count`;S3/S4/S5 可直接复用这些字段生成备案登记表和开标记录。

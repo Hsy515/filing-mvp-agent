@@ -66,6 +66,8 @@ def generate_eval_table(
     # 1) 索引字段表
     field_index = _index_sheet_items(basic_info_sheet)
     supplier_rows = _collect_supplier_rows(field_index)
+    consistency_checks = _check_supplier_consistency(supplier_rows)
+    definition_checks = _check_table_definition(table_def)
 
     # 2) 组装 placeholder_mapping
     mapping, missing_fields = _build_mapping(table_def, field_index, supplier_rows, extra_data)
@@ -80,6 +82,8 @@ def generate_eval_table(
             "supplier_count": len(supplier_rows),
             "missing_fields": missing_fields,
             "warnings": [f"模板文件不存在: {template_path}; 请联系模板设计师按 S4 占位符规范提供"],
+            "consistency_checks": consistency_checks,
+            "definition_checks": definition_checks,
         }
 
     # 4) 调用 S4 注入
@@ -107,6 +111,9 @@ def generate_eval_table(
         "supplier_count": len(supplier_rows),
         "missing_fields": missing_fields,
         "warnings": inject_res.get("warnings", []),
+        "consistency_checks": consistency_checks,
+        "definition_checks": definition_checks,
+        "mapping_audit": inject_res.get("audit", {}),
     }
 
 
@@ -141,7 +148,7 @@ def _build_mapping(
         for idx, srow in enumerate(supplier_rows, start=1):
             row: dict[str, Any] = {}
             for col in row_table.get("columns", []):
-                row[col["field"]] = _resolve_row_value(col, srow, idx)
+                row[col["field"]] = _resolve_row_value(col, srow, idx, field_index, extra_data)
             rows_payload.append(row)
 
         # anchor 名取占位符里的 token
@@ -154,6 +161,26 @@ def _build_mapping(
     elif row_table and not supplier_rows:
         missing.append(row_table["anchor_placeholder"])
 
+    review_item_table = table_def.get("review_item_table")
+    review_items = extra_data.get("review_items", [])
+    if review_item_table and review_items:
+        rows_payload = []
+        for idx, item in enumerate(review_items, start=1):
+            rows_payload.append({
+                "index": idx,
+                "item_name": item.get("name", ""),
+                "requirement": item.get("requirement", ""),
+                "result": "待审查",
+                "remark": item.get("remark", ""),
+            })
+        anchor_ph = review_item_table["anchor_placeholder"]
+        anchor_name = anchor_ph.replace("{", "").replace("}", "").replace("#", "")
+        mapping[anchor_ph] = {
+            "type": "table_rows",
+            "anchor": anchor_name,
+            "rows": rows_payload,
+        }
+
     return mapping, missing
 
 
@@ -164,7 +191,8 @@ def _resolve_header_value(spec: dict, field_index: dict, extra_data: dict) -> tu
         if not item:
             return "", False
         value = item.get("confirmed_value") or item.get("ai_value") or ""
-        return value, value not in ("", None)
+        ok = value not in ("", None) and item.get("extract_status") == "success"
+        return value, ok
     if src == "extra":
         value = extra_data.get(spec["key"], "")
         return value, value not in ("", None)
@@ -173,7 +201,13 @@ def _resolve_header_value(spec: dict, field_index: dict, extra_data: dict) -> tu
     return "", False
 
 
-def _resolve_row_value(col: dict, supplier_row: dict, auto_index: int) -> Any:
+def _resolve_row_value(
+    col: dict,
+    supplier_row: dict,
+    auto_index: int,
+    field_index: dict | None = None,
+    extra_data: dict | None = None,
+) -> Any:
     src = col.get("source")
     if src == "auto_index":
         return auto_index
@@ -181,7 +215,27 @@ def _resolve_row_value(col: dict, supplier_row: dict, auto_index: int) -> Any:
         return col.get("value", "")
     if src == "supplier_field":
         return supplier_row.get(col["item_key"], "")
+    if src == "field":
+        item = (field_index or {}).get(col["item_key"])
+        return item.get("confirmed_value") or item.get("ai_value") or "" if item else ""
+    if src == "extra_supplier_field":
+        extra_row = _match_extra_supplier_row(supplier_row, extra_data or {})
+        return extra_row.get(col.get("key", col["field"]), "")
+    if src == "extra":
+        return (extra_data or {}).get(col.get("key", col["field"]), "")
     return ""
+
+
+def _match_extra_supplier_row(supplier_row: dict, extra_data: dict) -> dict:
+    rows = extra_data.get("supplier_rows", [])
+    supplier_name = supplier_row.get("supplier_name", "")
+    social_credit_code = supplier_row.get("social_credit_code", "")
+    for row in rows:
+        if social_credit_code and row.get("social_credit_code") == social_credit_code:
+            return row
+        if supplier_name and row.get("supplier_name") == supplier_name:
+            return row
+    return {}
 
 
 # ---------- 索引 / 聚合 ----------
@@ -203,7 +257,64 @@ def _collect_supplier_rows(field_index: dict[str, dict]) -> list[dict]:
         except (ValueError, IndexError):
             continue
         rows_dict[idx][sub_key] = item.get("confirmed_value") or item.get("ai_value") or ""
+        rows_dict[idx].setdefault("_review_required_fields", [])
+        if item.get("review_required") or item.get("extract_status") != "success":
+            rows_dict[idx]["_review_required_fields"].append(sub_key)
     return [rows_dict[k] for k in sorted(rows_dict)]
+
+
+def _check_supplier_consistency(supplier_rows: list[dict]) -> list[dict]:
+    checks = []
+    seen_codes = set()
+    for idx, row in enumerate(supplier_rows, start=1):
+        missing = [key for key in ("supplier_name", "social_credit_code") if not row.get(key)]
+        if missing:
+            checks.append({
+                "type": "supplier_required_fields",
+                "supplier_index": idx,
+                "status": "warning",
+                "missing_fields": missing,
+            })
+        code = row.get("social_credit_code")
+        if code:
+            if code in seen_codes:
+                checks.append({
+                    "type": "duplicate_social_credit_code",
+                    "supplier_index": idx,
+                    "status": "warning",
+                    "value": code,
+                })
+            seen_codes.add(code)
+        if row.get("_review_required_fields"):
+            checks.append({
+                "type": "supplier_fields_need_review",
+                "supplier_index": idx,
+                "status": "warning",
+                "fields": row["_review_required_fields"],
+            })
+    if not supplier_rows:
+        checks.append({
+            "type": "supplier_rows",
+            "status": "warning",
+            "message": "未抽取到供应商报名行,无法自动生成评审/签到明细。",
+        })
+    return checks
+
+
+def _check_table_definition(table_def: dict) -> list[dict]:
+    checks = []
+    if not table_def.get("header_placeholders"):
+        checks.append({"type": "header_placeholders", "status": "warning", "message": "表格定义缺少头部占位符。"})
+    row_table = table_def.get("row_table")
+    if row_table and not row_table.get("columns"):
+        checks.append({"type": "row_columns", "status": "warning", "message": "行表格定义缺少 columns。"})
+    if table_def.get("review_item_table"):
+        checks.append({
+            "type": "dynamic_review_items",
+            "status": "info",
+            "message": "动态评审项仅生成待审查占位,不自动给出通过/不通过结论。",
+        })
+    return checks
 
 
 def _load_definitions(override_path: str | Path | None) -> dict:

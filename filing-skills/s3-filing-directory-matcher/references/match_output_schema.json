@@ -13,6 +13,14 @@
     "needs_replacement_items": { "type": "array", "items": { "type": "string" } },
     "exceptions": { "type": "array", "items": { "type": "string" } },
     "constraints_applied": { "type": "array", "items": { "type": "string" } },
+    "dependency_checks": {
+      "type": "array",
+      "description": "跨章节/跨材料依赖检查。"
+    },
+    "coverage_warnings": {
+      "type": "array",
+      "description": "目录规则覆盖不足或必需项缺失提示。"
+    },
     "draft_outline": {
       "type": "array",
       "items": { "$ref": "#/definitions/OutlineSection" }
@@ -37,14 +45,17 @@
             "required": ["material_id"],
             "properties": {
               "material_id": { "type": "string" },
+              "file_name": { "type": "string" },
               "evidence_block_ids": { "type": "array", "items": { "type": "string" } },
               "confidence": { "type": "number" },
-              "hit_rules": { "type": "array", "items": { "type": "string" } }
+              "hit_rules": { "type": "array", "items": { "type": "string" } },
+              "evidence_summary": { "type": "string" }
             }
           }
         },
         "review_required": { "type": "boolean" },
-        "remark": { "type": "string" }
+        "remark": { "type": "string" },
+        "diagnostics": { "type": "array", "items": { "type": "string" } }
       }
     },
     "OutlineSection": {

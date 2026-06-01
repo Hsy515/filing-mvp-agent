@@ -92,7 +92,8 @@
       "applicable_purchase_methods": [],
       "match_rules": [
         { "type": "filename_keyword", "keywords": ["中标通知", "成交通知"] },
-        { "type": "material_type", "values": ["award_notice"] }
+        { "type": "material_type", "values": ["award_notice"] },
+        { "type": "content_tag", "tags": ["winner_name", "winning_amount"], "min_hits": 1 }
       ]
     },
     {
@@ -114,7 +115,8 @@
       "applicable_purchase_methods": [],
       "match_rules": [
         { "type": "filename_keyword", "keywords": ["验收", "履约"] },
-        { "type": "material_type", "values": ["acceptance_report"] }
+        { "type": "material_type", "values": ["acceptance_report"] },
+        { "type": "content_tag", "tags": ["acceptance_note"], "min_hits": 1 }
       ]
     }
   ]

@@ -1,0 +1,30 @@
+{
+  "$comment": "公开招标备案文件 MVP 模板映射示例,对应 assets/templates/8_filing_public_bid_MVP.docx",
+  "{{project_name}}": { "type": "text", "value": "2025年中药饮片采购项目" },
+  "{{project_id}}": { "type": "text", "value": "GCZB-2025-0117" },
+  "{{purchase_method}}": { "type": "text", "value": "公开招标" },
+  "{{budget}}": { "type": "number", "value": 1250000.00 },
+  "{{package_count}}": { "type": "text", "value": "1" },
+  "{{purchaser}}": { "type": "text", "value": "某省中医院" },
+  "{{agent}}": { "type": "text", "value": "四川五洲招标代理有限公司" },
+  "{{report_date}}": { "type": "date", "value": "2025-06-30", "format": "YYYY年M月" },
+  "{{entrust_date}}": { "type": "date", "value": "2025-06-01", "format": "YYYY年M月D日" },
+  "{{completion_date}}": { "type": "date", "value": "2025-06-30", "format": "YYYY年M月D日" },
+  "{{winner_name}}": { "type": "text", "value": "A 中药材有限公司" },
+  "{{winning_amount}}": { "type": "number", "value": 1180000.00 },
+  "{{project_manager}}": { "type": "text", "value": "张三" },
+  "{{project_team_members}}": { "type": "text", "value": "张三、李四、王五" },
+  "{{acceptance_note}}": { "type": "text", "value": "本采购项目已顺利实施。" },
+  "{{contact_info}}": { "type": "text", "value": "李经理 010-88888888" },
+  "{{#award_table}}": {
+    "type": "table_rows",
+    "anchor": "award_table",
+    "rows": [
+      {
+        "index": 1,
+        "winner_name": "A 中药材有限公司",
+        "winning_amount": "1,180,000.00"
+      }
+    ]
+  }
+}

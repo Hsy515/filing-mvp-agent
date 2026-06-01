@@ -39,6 +39,7 @@ def inject_xlsx(
     filled = 0
     missing: list[str] = []
     warnings: list[str] = []
+    preflight = _build_preflight_audit(_scan_residual(wb), placeholder_mapping, _scan_table_anchors(wb))
 
     # 1) 单值替换 + 表格锚点处理
     for ws in wb.worksheets:
@@ -78,7 +79,8 @@ def inject_xlsx(
         if strict_mode:
             return {"output_path": str(output_path), "status": "failed",
                     "warnings": [f"strict_mode 下未替换占位符: {residual}"],
-                    "placeholders_filled": filled, "placeholders_missing": list(residual)}
+                    "placeholders_filled": filled, "placeholders_missing": list(residual),
+                    "audit": preflight}
         for ph in residual:
             warnings.append(f"占位符未提供映射,已留空: {ph}")
             _replace_in_all_cells(wb, ph, "")
@@ -93,7 +95,17 @@ def inject_xlsx(
         "placeholders_filled": filled,
         "placeholders_missing": missing,
         "warnings": warnings,
+        "audit": preflight,
     }
+
+
+def audit_workbook_template(template_path: str | Path, placeholder_mapping: dict | None = None) -> dict:
+    try:
+        from openpyxl import load_workbook
+    except ImportError as e:
+        raise RuntimeError("请先安装 openpyxl: pip install openpyxl") from e
+    wb = load_workbook(template_path)
+    return _build_preflight_audit(_scan_residual(wb), placeholder_mapping or {}, _scan_table_anchors(wb))
 
 
 def _find_table_mapping(mapping: dict, anchor_name: str) -> dict | None:
@@ -162,6 +174,51 @@ def _scan_residual(wb) -> set[str]:
     return found
 
 
+def _scan_table_anchors(wb) -> set[str]:
+    found = set()
+    for ws in wb.worksheets:
+        for row in ws.iter_rows():
+            for cell in row:
+                if isinstance(cell.value, str):
+                    for m in TABLE_ANCHOR_RE.finditer(cell.value):
+                        found.add(m.group(1))
+    return found
+
+
+def _build_preflight_audit(found: set[str], mapping: dict, table_anchors: set[str]) -> dict:
+    provided = {
+        ph for ph, item in mapping.items()
+        if not str(ph).startswith("$") and isinstance(item, dict)
+    }
+    row_child_placeholders = _row_child_placeholders(mapping)
+    covered = provided | row_child_placeholders
+    provided_table_anchors = {
+        item.get("anchor") for item in mapping.values()
+        if isinstance(item, dict) and item.get("type") == "table_rows"
+    }
+    return {
+        "placeholders_found": sorted(found),
+        "table_anchors_found": sorted(table_anchors),
+        "mappings_provided": sorted(provided),
+        "row_child_placeholders": sorted(row_child_placeholders),
+        "missing_mappings": sorted(found - covered),
+        "unused_mappings": sorted(provided - found),
+        "missing_table_mappings": sorted(table_anchors - {a for a in provided_table_anchors if a}),
+        "illegal_mappings": sorted(ph for ph in provided if not PLACEHOLDER_RE.fullmatch(ph)),
+    }
+
+
+def _row_child_placeholders(mapping: dict) -> set[str]:
+    child = set()
+    for item in mapping.values():
+        if not isinstance(item, dict) or item.get("type") != "table_rows":
+            continue
+        for row in item.get("rows", []):
+            if isinstance(row, dict):
+                child.update(f"{{{{{key}}}}}" for key in row)
+    return child
+
+
 def _replace_in_all_cells(wb, placeholder: str, value: str) -> None:
     for ws in wb.worksheets:
         for row in ws.iter_rows():
@@ -174,11 +231,17 @@ if __name__ == "__main__":
     import argparse, json
     p = argparse.ArgumentParser()
     p.add_argument("--template", required=True)
-    p.add_argument("--output", required=True)
+    p.add_argument("--output")
     p.add_argument("--mapping", required=True)
     p.add_argument("--no-strict", action="store_true")
+    p.add_argument("--audit-only", action="store_true")
     args = p.parse_args()
 
     mapping = json.loads(Path(args.mapping).read_text(encoding="utf-8-sig"))
-    res = inject_xlsx(args.template, args.output, mapping, strict_mode=not args.no_strict)
-    print(json.dumps(res, ensure_ascii=False, indent=2))
+    if args.audit_only:
+        print(json.dumps(audit_workbook_template(args.template, mapping), ensure_ascii=False, indent=2))
+    else:
+        if not args.output:
+            p.error("--output is required unless --audit-only is set")
+        res = inject_xlsx(args.template, args.output, mapping, strict_mode=not args.no_strict)
+        print(json.dumps(res, ensure_ascii=False, indent=2))

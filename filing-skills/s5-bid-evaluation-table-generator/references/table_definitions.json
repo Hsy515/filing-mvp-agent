@@ -1,6 +1,6 @@
 {
   "$comment": "开评标表格字段映射权威定义。新增表格类型须在此添加完整定义,并提供对应模板。",
-  "version": "1.0",
+  "version": "1.1",
   "tables": {
     "qualification_review": {
       "name": "资格审查表",
@@ -24,6 +24,17 @@
           { "field": "register_time",      "source": "supplier_field", "item_key": "registration_time" },
           { "field": "qualification_pass", "source": "static", "value": "待审查" },
           { "field": "remark",             "source": "static", "value": "" }
+        ]
+      },
+      "review_item_table": {
+        "anchor_placeholder": "{{#review_item_table}}",
+        "row_source": "extra.review_items",
+        "columns": [
+          { "field": "index",       "source": "auto_index" },
+          { "field": "item_name",   "source": "extra_review_item" },
+          { "field": "requirement", "source": "extra_review_item" },
+          { "field": "result",      "source": "static", "value": "待审查" },
+          { "field": "remark",      "source": "extra_review_item" }
         ]
       }
     },
@@ -65,11 +76,30 @@
       "template_hint": "templates/得分汇总表.xlsx"
     },
     "bid_opening_record": {
-      "$status": "placeholder",
-      "$comment": "首版占位。需要外部传入唱标价、专家签字位",
       "name": "开标记录表",
-      "template_format": "xlsx",
-      "template_hint": "templates/开标记录表.xlsx"
+      "template_format": "docx",
+      "template_hint": "assets/templates/F_bid_opening_MVP.docx",
+      "header_placeholders": {
+        "{{project_name}}":      { "from": "field", "item_key": "project_name" },
+        "{{project_id}}":        { "from": "field", "item_key": "project_id" },
+        "{{purchaser}}":         { "from": "field", "item_key": "purchaser" },
+        "{{bid_open_time}}":     { "from": "field", "item_key": "bid_open_time", "render_type": "date", "format": "YYYY年M月D日 HH:MM" },
+        "{{venue}}":             { "from": "extra", "key": "venue", "render_type": "text" }
+      },
+      "row_table": {
+        "anchor_placeholder": "{{#supplier_table}}",
+        "row_source": "supplier_list",
+        "columns": [
+          { "field": "index",              "source": "auto_index" },
+          { "field": "supplier_name",      "source": "supplier_field", "item_key": "supplier_name" },
+          { "field": "purchase_content",   "source": "field", "item_key": "purchase_content" },
+          { "field": "manufacturer_model", "source": "extra_supplier_field", "key": "manufacturer_model" },
+          { "field": "bid_price",          "source": "extra_supplier_field", "key": "bid_price" },
+          { "field": "delivery_period",    "source": "extra_supplier_field", "key": "delivery_period" },
+          { "field": "delivery_place",     "source": "extra_supplier_field", "key": "delivery_place" },
+          { "field": "remark",             "source": "extra_supplier_field", "key": "remark" }
+        ]
+      }
     }
   }
 }

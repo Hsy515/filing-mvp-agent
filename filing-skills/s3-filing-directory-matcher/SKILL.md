@@ -147,3 +147,11 @@ description: 备案材料目录匹配与初稿组装。当用户需要把已上�
 - `references/draft_outline_template.json` — 初稿章节模板
 - `references/match_output_schema.json` — 输出 schema
 - `assets/sample_match_result.json` — 完整样例
+
+## 反馈修订后的匹配策略
+
+- 自动从 S2 的 `extra_archive_requirement`、`temporary_rule`、`format_requirement` 生成临时目录约束,并写入 `constraints_applied`。
+- 支持 `content_keyword` 和 `field_value_contains` 规则,便于把冷门地方标准、临时条款、行业惯例等动态要求放进目录匹配,不用改代码。
+- 多份材料同时高置信匹配时,输出 `needs_replacement`、`diagnostics` 和 `evidence_summary`,交人工确认保留哪份。
+- 输出新增 `dependency_checks` 与 `coverage_warnings`;如果资格审查表、评标报告、临时规则之间存在链路缺口,只提示风险,不做合规结论。
+- 初稿模板已接入公开招标备案 MVP 字段:项目包数、中标人、中标金额、项目负责人、项目小组成员、验收情况说明。结果/验收类字段按可选引用处理,避免 MVP 因未进入履约阶段而整体阻塞。

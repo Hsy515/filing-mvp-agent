@@ -1,0 +1,50 @@
+{
+  "test_case_type": "attachment_classification",
+  "source_sample_path": "demo-materials/real-test-samples/attachment-classification/附件.zip",
+  "file_name": "附件.zip",
+  "file_type": "附件包",
+  "should_extract_or_register_archive": true,
+  "classification_goal": "识别附件包内材料类型，并输出材料分类结果表",
+  "attachment_classification": [
+    {
+      "file_name": "包(1)_报价一览表.pdf",
+      "material_type": "报价表",
+      "basis": "文件名包含“报价一览表”"
+    },
+    {
+      "file_name": "包(1)_报价明细表.docx",
+      "material_type": "报价表",
+      "basis": "文件名包含“报价明细表”"
+    },
+    {
+      "file_name": "投标（响应）函.pdf",
+      "material_type": "响应函",
+      "basis": "文件名包含“响应函”"
+    },
+    {
+      "file_name": "合同草案.docx",
+      "material_type": "合同草案",
+      "basis": "文件名包含“合同草案”"
+    },
+    {
+      "file_name": "中小企业声明函.pdf",
+      "material_type": "中小企业声明函",
+      "basis": "文件名包含“中小企业声明函”"
+    },
+    {
+      "file_name": "质疑函.docx",
+      "material_type": "质疑函",
+      "basis": "文件名包含“质疑函”"
+    },
+    {
+      "file_name": "投诉书.docx",
+      "material_type": "投诉书",
+      "basis": "文件名包含“投诉书”"
+    },
+    {
+      "file_name": "特定资格要求.docx",
+      "material_type": "特定资格要求",
+      "basis": "文件名包含“特定资格要求”"
+    }
+  ]
+}

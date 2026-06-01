@@ -14,6 +14,18 @@
         "items": {
           "type": "array",
           "items": { "$ref": "#/definitions/SheetItem" }
+        },
+        "logic_checks": {
+          "type": "array",
+          "description": "跨字段、跨章节和领域约束检查结果。"
+        },
+        "review_queue": {
+          "type": "array",
+          "description": "需要人工确认的字段队列。"
+        },
+        "rule_feedback": {
+          "type": "array",
+          "description": "可沉淀到字段字典或领域规则的错误/修正事件。"
         }
       }
     }
@@ -25,7 +37,7 @@
       "properties": {
         "category": {
           "type": "string",
-          "enum": ["file_core", "notice_key", "supplier_registration", "special_remark"]
+          "enum": ["file_core", "notice_key", "supplier_registration", "award_result", "special_remark"]
         },
         "item_key": {
           "type": "string",
@@ -65,6 +77,11 @@
             }
           ]
         },
+        "candidate_sources": {
+          "type": "array",
+          "description": "抽取候选来源,用于冲突排查和人工复核。",
+          "items": { "$ref": "#/definitions/Source" }
+        },
         "validation_result": {
           "type": "object",
           "required": ["status"],
@@ -73,7 +90,25 @@
             "message": { "type": "string" }
           }
         },
-        "review_required": { "type": "boolean" }
+        "review_required": { "type": "boolean" },
+        "logic_flags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "metadata": {
+          "type": "object"
+        }
+      }
+    },
+    "Source": {
+      "type": "object",
+      "required": ["material_id", "file_name", "block_id"],
+      "properties": {
+        "material_id": { "type": "string" },
+        "file_name": { "type": "string" },
+        "page": { "type": "integer" },
+        "block_id": { "type": "string" },
+        "excerpt": { "type": "string", "maxLength": 200 }
       }
     }
   }

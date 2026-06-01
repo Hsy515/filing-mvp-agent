@@ -18,9 +18,11 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MatchedMaterial:
     material_id: str
+    file_name: str = ""
     evidence_block_ids: list[str] = field(default_factory=list)
     confidence: float = 0.0
     hit_rules: list[str] = field(default_factory=list)
+    evidence_summary: str = ""
 
 
 @dataclass
@@ -32,6 +34,7 @@ class DirectoryMatch:
     matched_materials: list[MatchedMaterial] = field(default_factory=list)
     review_required: bool = True
     remark: str = ""
+    diagnostics: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -42,6 +45,7 @@ class DirectoryMatch:
             "matched_materials": [asdict(m) for m in self.matched_materials],
             "review_required": self.review_required,
             "remark": self.remark,
+            "diagnostics": self.diagnostics,
         }
 
 
@@ -66,10 +70,13 @@ def match_directory(
 
     # 3. 字段表索引: item_key -> SheetItem
     field_index = _index_sheet_items(basic_info_sheet)
+    purchase_method = purchase_method or _field_value(field_index, "purchase_method")
 
     # 4. 注入特殊约束生成的临时目录项
     items = list(template["items"])
-    items.extend(_constraints_to_items(special_constraints or []))
+    all_constraints = list(special_constraints or [])
+    all_constraints.extend(_constraints_from_sheet(field_index))
+    items.extend(_constraints_to_items(all_constraints))
 
     # 5. 逐项匹配
     matches: list[DirectoryMatch] = []
@@ -85,13 +92,17 @@ def match_directory(
     missing = [m.directory_item_id for m in matches if m.match_status == "missing" and m.required]
     needs_replacement = [m.directory_item_id for m in matches if m.match_status == "needs_replacement"]
     exceptions = [m.directory_item_id for m in matches if m.match_status == "exception"]
+    dependency_checks = _check_directory_dependencies(matches, field_index)
+    coverage_warnings = _build_coverage_warnings(items, matches)
 
     return {
         "directory_matches": [m.to_dict() for m in matches],
         "missing_items": missing,
         "needs_replacement_items": needs_replacement,
         "exceptions": exceptions,
-        "constraints_applied": [c["key"] for c in (special_constraints or [])],
+        "constraints_applied": [c["key"] for c in all_constraints],
+        "dependency_checks": dependency_checks,
+        "coverage_warnings": coverage_warnings,
     }
 
 
@@ -124,11 +135,14 @@ def _match_one_item(
                 evidence_block_ids.extend(evidence)
 
         if hits:
+            evidence_summary = _summarize_evidence(evidence_block_ids, blocks_index.get(material_id, []))
             dm.matched_materials.append(MatchedMaterial(
                 material_id=material_id,
+                file_name=mat.get("file_name", ""),
                 evidence_block_ids=list(dict.fromkeys(evidence_block_ids)),  # 去重保序
                 confidence=max(confidences) if confidences else 0.5,
                 hit_rules=hits,
+                evidence_summary=evidence_summary,
             ))
 
     # 状态判定
@@ -147,10 +161,12 @@ def _match_one_item(
         dm.match_status = "exception"
         dm.review_required = True
         dm.remark = f"匹配置信度过低 ({best_conf:.2f}),需人工确认"
+        dm.diagnostics.append("low_confidence_match")
     elif len(dm.matched_materials) > 1 and _has_conflict(dm.matched_materials):
         dm.match_status = "needs_replacement"
         dm.review_required = True
         dm.remark = "多份材料同时匹配且内容存在冲突,需人工确认保留哪一份"
+        dm.diagnostics.append("multiple_high_confidence_materials")
     else:
         dm.match_status = "matched"
         dm.review_required = best_conf < 0.85
@@ -188,6 +204,18 @@ def _apply_rule(
             return True, min(0.6 + 0.1 * len(hit_blocks), 0.95), hit_blocks
         return False, 0.0, []
 
+    if rtype == "content_keyword":
+        keywords = rule.get("keywords", [])
+        min_hits = rule.get("min_hits", 1)
+        hit_blocks = []
+        for block in material_blocks:
+            text = block.get("text", "")
+            if any(kw in text for kw in keywords):
+                hit_blocks.append(block["block_id"])
+        if len(hit_blocks) >= min_hits:
+            return True, min(0.62 + 0.08 * len(hit_blocks), 0.92), hit_blocks
+        return False, 0.0, []
+
     if rtype == "field_present":
         keys = rule.get("item_keys", [])
         # 字段在抓取表里 success
@@ -204,6 +232,14 @@ def _apply_rule(
             return True, 0.8, []
         return False, 0.0, []
 
+    if rtype == "field_value_contains":
+        for key in rule.get("item_keys", []):
+            item = field_index.get(key)
+            value = _item_value(item)
+            if value and any(kw in str(value) for kw in rule.get("keywords", [])):
+                return True, 0.75, []
+        return False, 0.0, []
+
     return False, 0.0, []
 
 
@@ -217,6 +253,10 @@ def _rule_label(rule: dict) -> str:
         return f"tag:{rule.get('tags', [])}"
     if rtype == "field_present":
         return f"field:{rule.get('item_keys', [])}"
+    if rtype == "content_keyword":
+        return f"keyword:{rule.get('keywords', [])}"
+    if rtype == "field_value_contains":
+        return f"field_contains:{rule.get('item_keys', [])}"
     return rtype or "unknown"
 
 
@@ -226,7 +266,18 @@ def _has_conflict(materials: list[MatchedMaterial]) -> bool:
     真实实现可以比较具体字段值是否一致。
     """
     high = [m for m in materials if m.confidence >= 0.85]
-    return len(high) >= 2
+    distinct_names = {m.file_name or m.material_id for m in high}
+    return len(distinct_names) >= 2
+
+
+def _summarize_evidence(block_ids: list[str], material_blocks: list[dict]) -> str:
+    by_id = {b.get("block_id"): b for b in material_blocks}
+    excerpts = []
+    for block_id in list(dict.fromkeys(block_ids))[:3]:
+        text = (by_id.get(block_id, {}).get("text") or "").strip()
+        if text:
+            excerpts.append(text[:60])
+    return " | ".join(excerpts)
 
 
 # ---------- 索引辅助 ----------
@@ -243,6 +294,16 @@ def _index_sheet_items(sheet: dict) -> dict[str, dict]:
     return {it["item_key"]: it for it in items}
 
 
+def _item_value(item: dict | None):
+    if not item:
+        return ""
+    return item.get("confirmed_value") or item.get("ai_value") or ""
+
+
+def _field_value(field_index: dict[str, dict], key: str) -> str:
+    return str(_item_value(field_index.get(key)) or "")
+
+
 def _load_template(template_id: str, override_path: str | Path | None) -> dict:
     if override_path:
         return json.loads(Path(override_path).read_text(encoding="utf-8"))
@@ -257,15 +318,64 @@ def _constraints_to_items(constraints: list[dict]) -> list[dict]:
     """把特殊约束转化为临时必需目录项"""
     items = []
     for i, c in enumerate(constraints, start=900):
+        value = str(c.get("value", "")).strip()
+        keywords = c.get("keywords") or ([value] if value else [])
         items.append({
             "directory_item_id": f"dir_{i}",
-            "directory_item_name": f"特殊归档:{c.get('value', '')}",
+            "directory_item_name": f"特殊归档:{value}",
             "required": True,
-            "match_rules": [],  # 默认不能自动匹配,需人工归档
+            "match_rules": [
+                {"type": "content_keyword", "keywords": keywords, "min_hits": 1}
+            ] if keywords else [],
             "applicable_purchase_methods": [],
             "_from_constraint": c.get("key"),
         })
     return items
+
+
+def _constraints_from_sheet(field_index: dict[str, dict]) -> list[dict]:
+    constraints = []
+    for key in ("extra_archive_requirement", "temporary_rule", "format_requirement"):
+        value = _field_value(field_index, key)
+        if value:
+            constraints.append({"key": key, "value": value})
+    return constraints
+
+
+def _check_directory_dependencies(matches: list[DirectoryMatch], field_index: dict[str, dict]) -> list[dict]:
+    by_id = {m.directory_item_id: m for m in matches}
+    checks = []
+    if _field_value(field_index, "temporary_rule"):
+        checks.append({
+            "type": "temporary_rule_requires_manual_review",
+            "status": "warning",
+            "message": "存在临时规则/动态结算描述,需人工确认是否新增目录项或替换模板。",
+        })
+    if by_id.get("dir_006") and by_id["dir_006"].match_status == "missing" and by_id.get("dir_007"):
+        checks.append({
+            "type": "review_record_dependency",
+            "status": "warning",
+            "message": "资格审查表缺失时,评标报告/评审记录链路可能不完整。",
+        })
+    return checks
+
+
+def _build_coverage_warnings(items: list[dict], matches: list[DirectoryMatch]) -> list[dict]:
+    by_id = {m.directory_item_id: m for m in matches}
+    warnings = []
+    for item in items:
+        match = by_id.get(item["directory_item_id"])
+        if item.get("required") and not item.get("match_rules"):
+            warnings.append({
+                "directory_item_id": item["directory_item_id"],
+                "message": "必需目录项缺少自动匹配规则,只能进入人工归档。",
+            })
+        if match and match.match_status == "missing" and item.get("required"):
+            warnings.append({
+                "directory_item_id": item["directory_item_id"],
+                "message": "必需目录项未匹配,需补材料或扩充规则。",
+            })
+    return warnings
 
 
 if __name__ == "__main__":

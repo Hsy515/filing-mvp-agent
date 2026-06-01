@@ -122,11 +122,22 @@ S2、S3、S5 都输出结构化 JSON,但业务侧最终要的是**可直接提�
 | 处理表格行重复、跨 Run 占位符 | 把没有占位符的内容硬塞进文档 |
 | 输出 docx / xlsx | 输出 PDF(目前不支持,后续可由 LibreOffice/Spire 转) |
 
+## 反馈修订后的输出自检
+
+- DOCX 支持 `audit_template()` 和 CLI `--audit-only`,可先输出 `missing_mappings`、`unused_mappings`、`illegal_mappings` 再注入。
+- DOCX 注入会扫描普通段落、表格、页眉页脚和文本框 XML 中的 `w:t` 节点,降低固定 DOM 结构导致的漏填风险。
+- 严格模式下所有残留占位符都会写入 `placeholders_missing`,不得只返回笼统失败。
+- XLSX 注入会记录单值占位符、表格锚点、缺失 mapping 和未使用 mapping,作为输出前一致性检查。
+- 已接入公开招标备案 MVP 模板 `assets/templates/8_filing_public_bid_MVP.docx`,来源为用户提供的 `8-备案文件（公开招标）电子化招标.docx`;占位符覆盖封面、总体概述、验收备案登记表、采购活动记录表和中标人/中标金额重复行。
+- 对应映射样例为 `assets/filing_public_bid_mapping_example.json`;该模板已经通过 `--audit-only` 预检和严格模式注入测试,无残留占位符。
+
 ## 脚本与参考
 
 - `scripts/inject_docx.py` — Word 模板注入
 - `scripts/inject_xlsx.py` — Excel 模板注入
-- `scripts/placeholder_scanner.py` — 占位符扫描
+- `scripts/inject_docx.py --audit-only` / `scripts/inject_xlsx.py --audit-only` — 占位符扫描与预检
 - `references/placeholder_conventions.md` — 占位符书写规范(对接模板设计师)
 - `assets/placeholder_mapping_example.json` — 完整 mapping 例子
+- `assets/filing_public_bid_mapping_example.json` — 公开招标备案 MVP 模板 mapping 例子
+- `assets/templates/8_filing_public_bid_MVP.docx` — 公开招标备案 MVP 占位符模板
 - `assets/template_design_checklist.md` — 模板设计师 checklist

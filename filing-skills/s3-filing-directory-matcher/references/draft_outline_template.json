@@ -11,6 +11,7 @@
         { "type": "field", "item_key": "project_id" },
         { "type": "field", "item_key": "purchase_method" },
         { "type": "field", "item_key": "budget" },
+        { "type": "field", "item_key": "package_count", "required": false },
         { "type": "field", "item_key": "purchaser" },
         { "type": "field", "item_key": "agent" }
       ]
@@ -69,18 +70,24 @@
       "section_title": "七、结果文件",
       "directory_item_ids": ["dir_008", "dir_009"],
       "content_refs": [
+        { "type": "field", "item_key": "winner_name", "required": false },
+        { "type": "field", "item_key": "winning_amount", "required": false },
+        { "type": "field", "item_key": "project_manager", "required": false },
+        { "type": "field", "item_key": "project_team_members", "required": false },
         { "type": "material", "directory_item_id": "dir_008" },
         { "type": "material", "directory_item_id": "dir_009" }
       ]
     },
     {
       "section_id": "sec_008",
-      "section_title": "八、特殊归档说明",
-      "directory_item_ids": [],
+      "section_title": "八、履约验收与特殊归档说明",
+      "directory_item_ids": ["dir_010"],
       "content_refs": [
-        { "type": "field", "item_key": "extra_archive_requirement" },
-        { "type": "field", "item_key": "format_requirement" },
-        { "type": "field", "item_key": "temporary_rule" }
+        { "type": "field", "item_key": "acceptance_note", "required": false },
+        { "type": "material", "directory_item_id": "dir_010", "required": false },
+        { "type": "field", "item_key": "extra_archive_requirement", "required": false },
+        { "type": "field", "item_key": "format_requirement", "required": false },
+        { "type": "field", "item_key": "temporary_rule", "required": false }
       ]
     }
   ]

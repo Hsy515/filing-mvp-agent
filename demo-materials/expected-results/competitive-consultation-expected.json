@@ -1,0 +1,12 @@
+{
+  "test_case_type": "competitive_consultation",
+  "source_sample_path": "demo-materials/real-test-samples/competitive-consultation/挂网版-2026年科菁荟跨区域科技交流活动项目.doc",
+  "file_name": "挂网版-2026年科菁荟跨区域科技交流活动项目.doc",
+  "file_type": "竞争性磋商文件",
+  "procurement_method": "竞争性磋商",
+  "project_name": "2026年“科菁荟”跨区域科技交流活动项目",
+  "project_no": "SCWZDL-202602-KXKJH01",
+  "should_generate_bid_table": true,
+  "should_match_filing_template": true,
+  "matched_template_type": "竞争性磋商类备案模板"
+}

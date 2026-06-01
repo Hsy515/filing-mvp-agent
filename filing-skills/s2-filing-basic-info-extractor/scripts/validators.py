@@ -20,6 +20,8 @@ def validate_project_id(value: str, fdef: dict) -> tuple[str, str]:
 
 
 def validate_amount(value: Any, fdef: dict) -> tuple[str, str]:
+    if isinstance(value, str) and any(key in value for key in ("下浮率", "折扣率", "动态结算", "据实结算", "单价结算")):
+        return "failed", "该字段疑似动态定价/结算规则,不能当作静态预算金额"
     try:
         num = float(value)
     except (TypeError, ValueError):
@@ -29,6 +31,18 @@ def validate_amount(value: Any, fdef: dict) -> tuple[str, str]:
     if num > 1e10:
         return "warning", "金额超过 100 亿,请核对单位是否正确"
     return "passed", "金额合法"
+
+
+def validate_positive_integer(value: Any, fdef: dict) -> tuple[str, str]:
+    if value in ("", None):
+        return "warning", "整数值为空"
+    try:
+        num = int(value)
+    except (TypeError, ValueError):
+        return "failed", f"无法解析为整数: {value}"
+    if num <= 0:
+        return "failed", "整数值必须大于 0"
+    return "passed", "整数值合法"
 
 
 def validate_enum(value: str, fdef: dict) -> tuple[str, str]:
@@ -65,8 +79,17 @@ def validate_social_credit_code(value: str, fdef: dict) -> tuple[str, str]:
         return "failed", f"长度应为 18,实际 {len(value)}"
     if not re.match(r"^[0-9A-Z]{18}$", value):
         return "failed", "包含非法字符,只能是数字和大写字母"
-    # 完整算法: 校验码计算,这里仅做格式校验
-    return "passed", "信用代码格式正常(未做校验码计算)"
+    chars = "0123456789ABCDEFGHJKLMNPQRTUWXY"
+    weights = [1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28]
+    try:
+        total = sum(chars.index(ch) * weight for ch, weight in zip(value[:17], weights))
+        check_idx = (31 - total % 31) % 31
+        expected = chars[check_idx]
+    except ValueError:
+        return "failed", "包含统一社会信用代码字符集之外的字符"
+    if value[-1] != expected:
+        return "failed", f"校验码不匹配,期望 {expected},实际 {value[-1]}"
+    return "passed", "信用代码校验通过"
 
 
 def validate_contact(value: str, fdef: dict) -> tuple[str, str]:
@@ -82,6 +105,7 @@ def validate_contact(value: str, fdef: dict) -> tuple[str, str]:
 VALIDATORS = {
     "validate_project_id": validate_project_id,
     "validate_amount": validate_amount,
+    "validate_positive_integer": validate_positive_integer,
     "validate_enum": validate_enum,
     "validate_datetime": validate_datetime,
     "validate_social_credit_code": validate_social_credit_code,

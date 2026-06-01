@@ -24,6 +24,7 @@ class InjectionResult:
     placeholders_filled: int = 0
     placeholders_missing: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    audit: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -32,6 +33,7 @@ class InjectionResult:
             "placeholders_filled": self.placeholders_filled,
             "placeholders_missing": self.placeholders_missing,
             "warnings": self.warnings,
+            "audit": self.audit,
         }
 
 
@@ -61,6 +63,7 @@ def inject_docx(
     # 1) 扫描所有占位符位置
     found = _scan_placeholders(doc)
     logger.info("扫描到占位符: %s", found)
+    result.audit = _build_preflight_audit(found, placeholder_mapping)
 
     # 2) 单值占位符替换
     for placeholder, mapping in _iter_valid_mappings(placeholder_mapping, result.warnings):
@@ -82,6 +85,7 @@ def inject_docx(
     # 3) 残留占位符处理
     residual = _scan_placeholders(doc)
     if residual:
+        result.placeholders_missing = sorted(residual)
         if strict_mode:
             result.status = "failed"
             result.warnings.append(f"strict_mode 下仍有未替换占位符: {residual}")
@@ -98,6 +102,18 @@ def inject_docx(
     if result.placeholders_missing:
         result.status = "partial"
     return result
+
+
+def audit_template(template_path: str | Path, placeholder_mapping: dict | None = None) -> dict:
+    """只扫描模板,不写输出文件。用于模板设计师交付前自检。"""
+    try:
+        from docx import Document
+    except ImportError as e:
+        raise RuntimeError("请先安装 python-docx: pip install python-docx") from e
+
+    doc = Document(template_path)
+    found = _scan_placeholders(doc)
+    return _build_preflight_audit(found, placeholder_mapping or {})
 
 
 # ---------- 扫描 ----------
@@ -121,7 +137,39 @@ def _scan_placeholders(doc) -> set[str]:
             for p in container.paragraphs:
                 for m in PLACEHOLDER_RE.finditer(p.text):
                     found.add(m.group(0))
+    for text in _iter_xml_text_values(doc):
+        for m in PLACEHOLDER_RE.finditer(text):
+            found.add(m.group(0))
     return found
+
+
+def _build_preflight_audit(found: set[str], placeholder_mapping: dict) -> dict:
+    provided = {
+        ph for ph, item in placeholder_mapping.items()
+        if not str(ph).startswith("$") and isinstance(item, dict)
+    }
+    row_child_placeholders = _row_child_placeholders(placeholder_mapping)
+    covered = provided | row_child_placeholders
+    illegal = sorted(ph for ph in provided if not PLACEHOLDER_RE.fullmatch(ph))
+    return {
+        "placeholders_found": sorted(found),
+        "mappings_provided": sorted(provided),
+        "row_child_placeholders": sorted(row_child_placeholders),
+        "missing_mappings": sorted(found - covered),
+        "unused_mappings": sorted(provided - found),
+        "illegal_mappings": illegal,
+    }
+
+
+def _row_child_placeholders(placeholder_mapping: dict) -> set[str]:
+    child = set()
+    for mapping in placeholder_mapping.values():
+        if not isinstance(mapping, dict) or mapping.get("type") != "table_rows":
+            continue
+        for row in mapping.get("rows", []):
+            if isinstance(row, dict):
+                child.update(f"{{{{{key}}}}}" for key in row)
+    return child
 
 
 def _iter_valid_mappings(placeholder_mapping: dict, warnings: list[str]):
@@ -161,6 +209,9 @@ def _inject_single_value(doc, placeholder: str, mapping: dict) -> bool:
                     _replace_in_paragraph(p, placeholder, value_str)
                     replaced = True
 
+    if _replace_in_xml_text_nodes(doc, placeholder, value_str):
+        replaced = True
+
     return replaced
 
 
@@ -188,6 +239,40 @@ def _replace_in_paragraph(paragraph, placeholder: str, value: str) -> None:
     runs[0].text = replaced
     for r in runs[1:]:
         r.text = ""
+
+
+def _iter_xml_text_values(doc):
+    for node in _iter_xml_text_nodes(doc):
+        if node.text:
+            yield node.text
+
+
+def _iter_xml_text_nodes(doc):
+    from docx.oxml.ns import qn
+
+    roots = [doc.element]
+    for section in doc.sections:
+        roots.append(section.header._element)
+        roots.append(section.footer._element)
+
+    seen = set()
+    for root in roots:
+        for node in root.iter(qn("w:t")):
+            ident = id(node)
+            if ident in seen:
+                continue
+            seen.add(ident)
+            yield node
+
+
+def _replace_in_xml_text_nodes(doc, placeholder: str, value: str) -> bool:
+    """Handle placeholders stored in text boxes or drawing XML not exposed as paragraphs."""
+    replaced = False
+    for node in _iter_xml_text_nodes(doc):
+        if node.text and placeholder in node.text:
+            node.text = node.text.replace(placeholder, value)
+            replaced = True
+    return replaced
 
 
 # ---------- 表格行注入 ----------
@@ -294,11 +379,17 @@ if __name__ == "__main__":
     import argparse, json
     p = argparse.ArgumentParser()
     p.add_argument("--template", required=True)
-    p.add_argument("--output", required=True)
+    p.add_argument("--output")
     p.add_argument("--mapping", required=True, help="placeholder mapping JSON")
     p.add_argument("--no-strict", action="store_true")
+    p.add_argument("--audit-only", action="store_true", help="只扫描模板占位符,不生成输出文件")
     args = p.parse_args()
 
     mapping = json.loads(Path(args.mapping).read_text(encoding="utf-8-sig"))
-    res = inject_docx(args.template, args.output, mapping, strict_mode=not args.no_strict)
-    print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+    if args.audit_only:
+        print(json.dumps(audit_template(args.template, mapping), ensure_ascii=False, indent=2))
+    else:
+        if not args.output:
+            p.error("--output is required unless --audit-only is set")
+        res = inject_docx(args.template, args.output, mapping, strict_mode=not args.no_strict)
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
